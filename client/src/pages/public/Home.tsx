@@ -4,8 +4,7 @@ import { api } from '../../services/api';
 import { VehicleCard } from '../../components/VehicleCard';
 import {
   Calendar, Shield, Clock, Compass, Award,
-  ChevronDown, CheckCircle, ArrowRight, HelpCircle, Send,
-  Play, Pause, Volume2, VolumeX
+  ChevronDown, CheckCircle, ArrowRight, HelpCircle, Send
 } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -20,29 +19,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Background Motion Video State & Ref
+  // Background Motion Video Ref
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
-  const [isVideoMuted, setIsVideoMuted] = useState(true);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play().catch(() => {});
-        setIsVideoPlaying(true);
-      } else {
-        videoRef.current.pause();
-        setIsVideoPlaying(false);
-      }
-    }
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsVideoMuted(videoRef.current.muted);
-    }
-  };
 
   // Fast Hero Search Form
   const tomorrow = new Date();
@@ -170,34 +148,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
           {/* Subtle directional gradient: provides text contrast on left while keeping motion video bright and prominent */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#102A43] via-transparent to-black/20 opacity-60" />
-        </div>
-
-        {/* Floating Motion Controls (Play/Pause & Mute) */}
-        <div className="absolute bottom-4 right-4 sm:right-8 z-20 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 text-xs text-slate-300 shadow-lg">
-          <span className="flex items-center gap-1.5 font-medium text-[11px] text-teal-300">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
-            </span>
-            Live Motion Fleet
-          </span>
-          <div className="w-[1px] h-3 bg-white/20"></div>
-          <button
-            type="button"
-            onClick={togglePlay}
-            className="p-1 hover:text-white transition-colors cursor-pointer"
-            title={isVideoPlaying ? "Pause video animation" : "Play video animation"}
-          >
-            {isVideoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={toggleMute}
-            className="p-1 hover:text-white transition-colors cursor-pointer"
-            title={isVideoMuted ? "Unmute audio" : "Mute audio"}
-          >
-            {isVideoMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-          </button>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
