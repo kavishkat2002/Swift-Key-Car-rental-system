@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary-navy: #102A43;
+    --navy-dark: #0A1C2E;
+    --navy-light: #243B53;
+    --teal-accent: #0F766E;
+    --teal-hover: #0D655E;
+    --teal-light: #CCFBF1;
+    --white: #FFFFFF;
+    --light-bg: #F8FAFC;
+    --secondary-bg: #F1F5F9;
+    --text-primary: #102A43;
+    --text-secondary: #526477;
+    --text-muted: #829AB1;
+    --border-color: #E2E8F0;
+    --border-subtle: #F1F5F9;
+    --danger: #DC2626;
+    --danger-light: #FEE2E2;
+    --success: #16A34A;
+    --success-light: #DCFCE7;
+    --warning: #D97706;
+    --warning-light: #FEF3C7;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-primary);
+    background-color: var(--light-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  /* Accessible focus states */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--teal-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Custom Corporate Helper Classes */
+.bg-navy {
+  background-color: #102A43;
+}
+.text-navy {
+  color: #102A43;
+}
+.bg-teal-brand {
+  background-color: #0F766E;
+}
+.hover\:bg-teal-brand-dark:hover {
+  background-color: #0D655E;
+}
+.text-teal-brand {
+  color: #0F766E;
+}
+.border-brand {
+  border-color: #E2E8F0;
+}

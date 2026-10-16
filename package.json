@@ -1,0 +1,32 @@
+{
+  "name": "swiftdrive-rentals",
+  "version": "1.0.0",
+  "description": "Full-stack Car Rental Web Application for SwiftDrive Rentals (Negombo, Sri Lanka) - ICBT CSE5009 Web Application Development",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,teal\" \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server run start",
+    "seed": "npm --prefix server run seed",
+    "sync:supabase": "npm --prefix server run sync:supabase",
+    "test": "npm --prefix server run test"
+  },
+  "keywords": [
+    "car-rental",
+    "sri-lanka",
+    "icbt",
+    "cse5009",
+    "full-stack",
+    "react",
+    "express",
+    "sqlite",
+    "postgresql"
+  ],
+  "author": "ICBT CSE5009 Student",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
