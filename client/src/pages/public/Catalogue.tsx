@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Vehicle } from '../../types';
 import { api } from '../../services/api';
 import { VehicleCard } from '../../components/VehicleCard';
-import { Search, Filter, RotateCcw, Calendar, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, RotateCcw, Calendar, SlidersHorizontal, X } from 'lucide-react';
 
 interface CatalogueProps {
   initialFilters?: {
@@ -64,9 +64,14 @@ export const Catalogue: React.FC<CatalogueProps> = ({
       });
   };
 
+  // Live debounced search & filter refresh
   useEffect(() => {
-    fetchVehicles();
-  }, [category, transmission, fuelType, minSeats, maxPrice, sortBy]);
+    const timer = setTimeout(() => {
+      fetchVehicles();
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [search, category, transmission, fuelType, minSeats, maxPrice, sortBy]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,9 +163,20 @@ export const Catalogue: React.FC<CatalogueProps> = ({
 
           {/* Keyword Search */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Search by Model or Make
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700">
+                Search by Model or Make
+              </label>
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="text-[10px] text-teal-700 hover:text-teal-900 font-semibold"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
             <div className="relative">
               <input
                 type="text"
@@ -168,10 +184,32 @@ export const Catalogue: React.FC<CatalogueProps> = ({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && fetchVehicles()}
-                className="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-md"
+                className="w-full pl-8 pr-8 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
+            {category !== 'all' && search && (
+              <div className="text-[11px] text-amber-800 bg-amber-50 p-2 rounded-md mt-1.5 flex items-center justify-between border border-amber-200">
+                <span>In <strong>{categories.find(c => c.id === category)?.label}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setCategory('all')}
+                  className="underline font-bold text-amber-900 hover:text-amber-950 ml-2 whitespace-nowrap"
+                >
+                  Search all fleet
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Date-Based Availability Search */}
@@ -340,18 +378,46 @@ export const Catalogue: React.FC<CatalogueProps> = ({
                 <Search className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-[#102A43]">
-                No vehicles matched your search filters
+                {search
+                  ? `No vehicles found matching "${search}"`
+                  : 'No vehicles matched your search filters'}
               </h3>
               <p className="text-xs text-[#526477] max-w-sm mx-auto">
-                Try widening your price range, clearing specific filters, or checking different rental dates.
+                {category !== 'all' && search ? (
+                  <span>
+                    No matching vehicles in <strong>{categories.find(c => c.id === category)?.label}</strong>. Try searching across the entire fleet or clearing your search term.
+                  </span>
+                ) : (
+                  'Try widening your price range, clearing specific filters, or checking different rental dates.'
+                )}
               </p>
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="px-4 py-2 bg-[#102A43] text-white text-xs font-semibold rounded-md"
-              >
-                Clear All Filters
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                {search && category !== 'all' && (
+                  <button
+                    type="button"
+                    onClick={() => setCategory('all')}
+                    className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold rounded-md transition-colors"
+                  >
+                    Search All Fleet
+                  </button>
+                )}
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-md transition-colors"
+                  >
+                    Clear Search "{search}"
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="px-3.5 py-1.5 bg-[#102A43] hover:bg-[#0b1d2e] text-white text-xs font-semibold rounded-md transition-colors"
+                >
+                  Reset All Filters
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

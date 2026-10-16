@@ -54,9 +54,19 @@ router.get('/', (req: Request, res: Response): void => {
     }
 
     if (search) {
-      query += ' AND (LOWER(make) LIKE ? OR LOWER(model) LIKE ? OR LOWER(registration_number) LIKE ?)';
-      const term = `%${String(search).toLowerCase().trim()}%`;
-      params.push(term, term, term);
+      const searchStr = String(search).toLowerCase().trim();
+      const words = searchStr.split(/\s+/).filter(Boolean);
+      for (const word of words) {
+        const term = `%${word}%`;
+        query += ` AND (
+          LOWER(make || ' ' || model) LIKE ? OR
+          LOWER(model) LIKE ? OR
+          LOWER(make) LIKE ? OR
+          LOWER(category) LIKE ? OR
+          LOWER(registration_number) LIKE ?
+        )`;
+        params.push(term, term, term, term, term);
+      }
     }
 
     // Apply sorting
