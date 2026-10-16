@@ -3,7 +3,7 @@ import { Vehicle, Review } from '../../types';
 import { api } from '../../services/api';
 import { VehicleCard } from '../../components/VehicleCard';
 import {
-  Calendar, MapPin, Shield, Clock, Compass, Award,
+  Calendar, Shield, Clock, Compass, Award,
   ChevronDown, CheckCircle, ArrowRight, HelpCircle, Send
 } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
@@ -123,11 +123,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-950/80 border border-teal-700/60 text-teal-300 text-xs font-semibold tracking-wide">
-                <MapPin className="w-3.5 h-3.5 text-teal-400" />
-                <span>Negombo Beach Road & Airport Hub • Sri Lanka</span>
-              </div>
-
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
                 Self-Drive Car Rentals in Negombo, Sri Lanka
               </h1>
