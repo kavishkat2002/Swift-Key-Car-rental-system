@@ -125,7 +125,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             © {new Date().getFullYear()} SwiftDrive Rentals (Pvt) Ltd. All rights reserved.
           </div>
           <div className="text-slate-400 text-center md:text-right">
-            <span>Design and Developed by © 2026 CreativeX Technology PVT LTD. All rights reserved.</span>
+            <span>Design and Developed by © 2026 CreativeX Technology PVT LTD</span>
           </div>
         </div>
       </div>
