@@ -13,12 +13,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Column 1: Company Profile */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded bg-teal-600 flex items-center justify-center text-white">
-                <Car className="w-4 h-4" />
+              <div className="bg-white px-3 py-1.5 rounded-lg inline-block shadow-xs">
+                <img src="/logo.png" alt="SwiftDrive Rentals" className="h-10 w-auto object-contain" />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">
-                SwiftDrive Rentals
-              </span>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
               Premium self-drive and chauffeur vehicle rentals headquartered in Negombo, Sri Lanka.

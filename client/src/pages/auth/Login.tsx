@@ -45,11 +45,13 @@ export const Login: React.FC<LoginProps> = ({
   return (
     <div className="max-w-md mx-auto px-4 py-16 space-y-6">
       <div className="text-center space-y-2">
-        <div className="w-12 h-12 rounded-xl bg-[#102A43] text-teal-400 flex items-center justify-center mx-auto shadow-sm">
-          <Car className="w-6 h-6" />
-        </div>
+        <img
+          src="/logo.png"
+          alt="SwiftDrive Rentals"
+          className="h-16 w-auto mx-auto object-contain mb-3"
+        />
         <h1 className="text-2xl font-bold text-[#102A43]">
-          Sign In to SwiftDrive Rentals
+          Sign In to Your Account
         </h1>
         <p className="text-xs text-[#526477]">
           Access your bookings, profile, or staff operations portal

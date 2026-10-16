@@ -33,19 +33,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
           <button
             type="button"
             onClick={() => handleNav('home')}
-            className="flex items-center gap-3 text-left focus:outline-none"
+            className="flex items-center gap-2 text-left focus:outline-none hover:opacity-95 transition-opacity py-1"
+            aria-label="SwiftDrive Rentals Home"
           >
-            <div className="w-10 h-10 rounded-lg bg-[#102A43] flex items-center justify-center text-white shadow-xs">
-              <Car className="w-5 h-5 text-teal-400" />
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight text-[#102A43] block leading-none">
-                SwiftDrive
-              </span>
-              <span className="text-xs text-[#526477] font-medium tracking-wide">
-                Rentals • Negombo, Sri Lanka
-              </span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="SwiftDrive Rentals"
+              className="h-12 sm:h-14 w-auto object-contain"
+            />
           </button>
 
           {/* Desktop Navigation Links */}
