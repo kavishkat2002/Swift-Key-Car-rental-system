@@ -5,7 +5,7 @@ import { VehicleCard } from '../../components/VehicleCard';
 import {
   Calendar, Shield, Clock, Compass, Award,
   ChevronDown, CheckCircle, ArrowRight, HelpCircle, Send,
-  Play, Pause, Volume2, VolumeX, Sparkles
+  Play, Pause, Volume2, VolumeX
 } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -195,11 +195,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-400/30 backdrop-blur-md text-teal-300 text-xs font-semibold tracking-wide">
-                <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
-                <span>Premium Self-Drive Experience • Negombo & CMB Airport</span>
-              </div>
-
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
                 Self-Drive Car Rentals in{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-300 to-cyan-400">
