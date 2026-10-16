@@ -4,7 +4,8 @@ import { api } from '../../services/api';
 import { VehicleCard } from '../../components/VehicleCard';
 import {
   Calendar, Shield, Clock, Compass, Award,
-  ChevronDown, CheckCircle, ArrowRight, HelpCircle, Send
+  ChevronDown, CheckCircle, ArrowRight, HelpCircle, Send,
+  Play, Pause, Volume2, VolumeX, Sparkles
 } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -18,6 +19,30 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
   const [featuredVehicles, setFeaturedVehicles] = useState<Vehicle[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Background Motion Video State & Ref
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play().catch(() => {});
+        setIsVideoPlaying(true);
+      } else {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsVideoMuted(videoRef.current.muted);
+    }
+  };
 
   // Fast Hero Search Form
   const tomorrow = new Date();
@@ -118,25 +143,80 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
 
   return (
     <div className="space-y-16 pb-16">
-      {/* 1. HERO SECTION */}
-      <section className="relative bg-[#102A43] text-white py-16 lg:py-24 overflow-hidden border-b border-slate-800">
+      {/* 1. HERO SECTION WITH CINEMATIC MOTION VIDEO */}
+      <section className="relative bg-[#07131e] text-white py-16 lg:py-24 overflow-hidden border-b border-slate-800">
+        {/* Background Motion Video Container */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover object-center scale-105 transform opacity-40 transition-opacity duration-1000"
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+          </video>
+          {/* Multi-layered cinematic gradient overlays for 100% WCAG contrast and readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#07131e]/95 via-[#0c2035]/85 to-[#07131e]/70" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07131e] via-transparent to-black/30" />
+          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
+        </div>
+
+        {/* Floating Motion Controls (Play/Pause & Mute) */}
+        <div className="absolute bottom-4 right-4 sm:right-8 z-20 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 text-xs text-slate-300 shadow-lg">
+          <span className="flex items-center gap-1.5 font-medium text-[11px] text-teal-300">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+            </span>
+            Live Motion Fleet
+          </span>
+          <div className="w-[1px] h-3 bg-white/20"></div>
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="p-1 hover:text-white transition-colors cursor-pointer"
+            title={isVideoPlaying ? "Pause video animation" : "Play video animation"}
+          >
+            {isVideoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={toggleMute}
+            className="p-1 hover:text-white transition-colors cursor-pointer"
+            title={isVideoMuted ? "Unmute audio" : "Mute audio"}
+          >
+            {isVideoMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-400/30 backdrop-blur-md text-teal-300 text-xs font-semibold tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
+                <span>Premium Self-Drive Experience • Negombo & CMB Airport</span>
+              </div>
+
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-                Self-Drive Car Rentals in Negombo, Sri Lanka
+                Self-Drive Car Rentals in{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-300 to-cyan-400">
+                  Negombo, Sri Lanka
+                </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
+              <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-sm">
                 Explore the cultural triangle, coastal highways, and misty tea plantations in total freedom.
-                Clean, modern fleet with transparent LKR tariffs, verified deposits, and 24/7 airport delivery.
+                Clean, roadworthy fleet with transparent LKR tariffs, verified deposits, and 24/7 airport delivery.
               </p>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
                 <button
                   type="button"
                   onClick={() => onNavigate('catalogue')}
-                  className="px-6 py-3 bg-[#0F766E] hover:bg-[#0D655E] text-white font-semibold text-sm rounded-lg shadow-sm transition-colors flex items-center gap-2"
+                  className="px-6 py-3 bg-[#0F766E] hover:bg-[#0D655E] text-white font-semibold text-sm rounded-lg shadow-md hover:shadow-teal-900/30 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <span>Explore Fleet Catalogue</span>
                   <ArrowRight className="w-4 h-4" />
@@ -145,30 +225,30 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
                 <button
                   type="button"
                   onClick={() => onNavigate('about')}
-                  className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-sm rounded-lg transition-colors"
+                  className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md font-semibold text-sm rounded-lg transition-colors cursor-pointer"
                 >
                   About Our Fleet
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800 text-xs text-slate-300">
-                <div>
+              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-white/10 text-xs">
+                <div className="bg-white/5 border border-white/10 backdrop-blur-md p-3 rounded-lg">
                   <div className="text-lg font-bold text-white">100%</div>
-                  <div>Verified Fleet</div>
+                  <div className="text-slate-300 text-[11px]">Verified Fleet</div>
                 </div>
-                <div>
+                <div className="bg-white/5 border border-white/10 backdrop-blur-md p-3 rounded-lg">
                   <div className="text-lg font-bold text-white">24/7</div>
-                  <div>Airport Handover</div>
+                  <div className="text-slate-300 text-[11px]">Airport Handover</div>
                 </div>
-                <div>
+                <div className="bg-white/5 border border-white/10 backdrop-blur-md p-3 rounded-lg">
                   <div className="text-lg font-bold text-white">LKR Zero</div>
-                  <div>Hidden Booking Fees</div>
+                  <div className="text-slate-300 text-[11px]">Hidden Booking Fees</div>
                 </div>
               </div>
             </div>
 
-            {/* Fast Hero Search Box */}
-            <div className="lg:col-span-5 bg-white text-slate-900 rounded-xl p-6 sm:p-7 shadow-lg border border-slate-200">
+            {/* Fast Hero Search Box with Glassmorphism */}
+            <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl p-6 sm:p-7 shadow-2xl border border-white/40 ring-1 ring-black/5">
               <div className="border-b border-slate-100 pb-3 mb-4">
                 <h2 className="text-base font-bold text-[#102A43]">
                   Find & Reserve Your Vehicle
@@ -242,7 +322,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#0F766E] hover:bg-[#0D655E] text-white text-xs font-semibold rounded-md shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 bg-[#0F766E] hover:bg-[#0D655E] text-white text-xs font-semibold rounded-md shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Check Availability & Rates</span>
