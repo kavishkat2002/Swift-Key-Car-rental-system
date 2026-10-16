@@ -69,6 +69,15 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
   const [inquiryMessage, setInquiryMessage] = useState('');
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
 
+  // Guarantee autoplay triggers on all modern browsers
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(() => {});
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     Promise.all([api.vehicles.getFeatured(), api.reviews.getAll()])
@@ -154,14 +163,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
             muted
             playsInline
             preload="auto"
-            className="w-full h-full object-cover object-center scale-105 transform opacity-40 transition-opacity duration-1000"
+            className="w-full h-full object-cover object-center opacity-90 transition-opacity duration-700 brightness-105 contrast-105"
           >
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
-          {/* Multi-layered cinematic gradient overlays for 100% WCAG contrast and readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#07131e]/95 via-[#0c2035]/85 to-[#07131e]/70" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07131e] via-transparent to-black/30" />
-          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
+          {/* Subtle directional gradient: provides text contrast on left while keeping motion video bright and prominent */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#102A43] via-transparent to-black/20 opacity-60" />
         </div>
 
         {/* Floating Motion Controls (Play/Pause & Mute) */}
@@ -195,11 +203,11 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                 Self-Drive Car Rentals in Negombo, Sri Lanka
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-sm">
+              <p className="text-base sm:text-lg text-slate-100 leading-relaxed max-w-2xl font-medium drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">
                 Explore the cultural triangle, coastal highways, and misty tea plantations in total freedom.
                 Clean, roadworthy fleet with transparent LKR tariffs, verified deposits, and 24/7 airport delivery.
               </p>
