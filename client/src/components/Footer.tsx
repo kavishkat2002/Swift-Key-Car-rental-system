@@ -119,13 +119,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Academic Note and Bottom Bar */}
+        {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-slate-800 text-xs text-slate-400 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             © {new Date().getFullYear()} SwiftDrive Rentals (Pvt) Ltd. All rights reserved.
           </div>
           <div className="text-slate-400 text-center md:text-right">
-            <span>Academic Demonstration Project for ICBT CSE5009 Web Application Development</span>
+            <span>Design and Developed by © 2026 CreativeX Technology PVT LTD. All rights reserved.</span>
           </div>
         </div>
       </div>
