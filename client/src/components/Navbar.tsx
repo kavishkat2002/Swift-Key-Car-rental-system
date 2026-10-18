@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Car, Menu, X, User as UserIcon, LogOut, ShieldCheck, ClipboardList, Calendar } from 'lucide-react';
+import { formatUrl } from '../utils/router';
 
 interface NavbarProps {
   currentPage: string;
@@ -30,9 +31,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18">
           {/* Brand Logo */}
-          <button
-            type="button"
-            onClick={() => handleNav('home')}
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNav('home');
+            }}
             className="flex items-center gap-2 text-left focus:outline-none hover:opacity-95 transition-opacity py-1"
             aria-label="SwiftDrive Rentals Home"
           >
@@ -41,17 +45,20 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
               alt="SwiftDrive Rentals"
               className="h-12 sm:h-14 w-auto object-contain"
             />
-          </button>
+          </a>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1" aria-label="Main Navigation">
             {navLinks.map((link) => {
               const isActive = currentPage === link.id;
               return (
-                <button
+                <a
                   key={link.id}
-                  type="button"
-                  onClick={() => handleNav(link.id)}
+                  href={formatUrl(link.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNav(link.id);
+                  }}
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     isActive
                       ? 'text-[#0F766E] bg-teal-50/80 font-semibold'
@@ -59,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   }`}
                 >
                   {link.label}
-                </button>
+                </a>
               );
             })}
           </nav>
@@ -69,9 +76,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             {user ? (
               <div className="flex items-center gap-2">
                 {isCustomer && (
-                  <button
-                    type="button"
-                    onClick={() => handleNav('customer-dashboard')}
+                  <a
+                    href="/customer/dashboard"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNav('customer-dashboard');
+                    }}
                     className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       currentPage === 'customer-dashboard'
                         ? 'bg-[#102A43] text-white'
@@ -80,13 +90,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   >
                     <Calendar className="w-4 h-4 text-teal-600" />
                     <span>My Bookings</span>
-                  </button>
+                  </a>
                 )}
 
                 {isStaff && (
-                  <button
-                    type="button"
-                    onClick={() => handleNav('staff-dashboard')}
+                  <a
+                    href="/staff/dashboard"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNav('staff-dashboard');
+                    }}
                     className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       currentPage === 'staff-dashboard'
                         ? 'bg-[#102A43] text-white'
@@ -95,13 +108,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   >
                     <ClipboardList className="w-4 h-4 text-teal-600" />
                     <span>Staff Desk</span>
-                  </button>
+                  </a>
                 )}
 
                 {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={() => handleNav('admin-dashboard')}
+                  <a
+                    href="/admin/dashboard"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNav('admin-dashboard');
+                    }}
                     className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       currentPage === 'admin-dashboard'
                         ? 'bg-[#0F766E] text-white'
@@ -110,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   >
                     <ShieldCheck className="w-4 h-4" />
                     <span>Admin Fleet</span>
-                  </button>
+                  </a>
                 )}
 
                 <div className="h-5 w-px bg-slate-200 mx-1" />
@@ -138,20 +154,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleNav('login')}
+                <a
+                  href="/login"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNav('login');
+                  }}
                   className="px-3.5 py-2 text-sm font-medium text-[#102A43] hover:text-[#0F766E] transition-colors"
                 >
                   Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleNav('register')}
+                </a>
+                <a
+                  href="/register"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNav('register');
+                  }}
                   className="px-4 py-2 text-sm font-medium rounded-md text-white bg-[#0F766E] hover:bg-[#0D655E] shadow-xs transition-colors"
                 >
                   Register
-                </button>
+                </a>
               </div>
             )}
           </div>
@@ -174,10 +196,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-6 space-y-2">
           {navLinks.map((link) => (
-            <button
+            <a
               key={link.id}
-              type="button"
-              onClick={() => handleNav(link.id)}
+              href={formatUrl(link.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNav(link.id);
+              }}
               className={`block w-full text-left px-3 py-2.5 rounded-md text-base font-medium ${
                 currentPage === link.id
                   ? 'text-[#0F766E] bg-teal-50 font-semibold'
@@ -185,7 +210,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
               }`}
             >
               {link.label}
-            </button>
+            </a>
           ))}
 
           <div className="pt-4 border-t border-slate-200 space-y-2">
@@ -206,51 +231,66 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                 </div>
 
                 {isCustomer && (
-                  <button
-                    type="button"
-                    onClick={() => handleNav('customer-dashboard')}
+                  <a
+                    href="/customer/dashboard"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNav('customer-dashboard');
+                    }}
                     className="block w-full text-left px-3 py-2 text-sm font-medium text-slate-700 bg-slate-50 rounded-md"
                   >
                     My Bookings & Profile
-                  </button>
+                  </a>
                 )}
 
                 {isStaff && (
-                  <button
-                    type="button"
-                    onClick={() => handleNav('staff-dashboard')}
+                  <a
+                    href="/staff/dashboard"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNav('staff-dashboard');
+                    }}
                     className="block w-full text-left px-3 py-2 text-sm font-medium text-slate-700 bg-slate-50 rounded-md"
                   >
                     Staff Operations Desk
-                  </button>
+                  </a>
                 )}
 
                 {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={() => handleNav('admin-dashboard')}
+                  <a
+                    href="/admin/dashboard"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNav('admin-dashboard');
+                    }}
                     className="block w-full text-left px-3 py-2 text-sm font-medium text-teal-800 bg-teal-50 rounded-md font-semibold"
                   >
                     Admin Fleet Management
-                  </button>
+                  </a>
                 )}
               </>
             ) : (
               <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleNav('login')}
+                <a
+                  href="/login"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNav('login');
+                  }}
                   className="w-full text-center py-2.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-md hover:bg-slate-50"
                 >
                   Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleNav('register')}
+                </a>
+                <a
+                  href="/register"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNav('register');
+                  }}
                   className="w-full text-center py-2.5 text-sm font-medium text-white bg-[#0F766E] rounded-md hover:bg-[#0D655E]"
                 >
                   Register
-                </button>
+                </a>
               </div>
             )}
           </div>

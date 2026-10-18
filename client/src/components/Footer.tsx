@@ -1,5 +1,6 @@
 import React from 'react';
 import { Car, MapPin, Phone, Mail, Clock, ShieldCheck } from 'lucide-react';
+import { formatUrl } from '../utils/router';
 
 interface FooterProps {
   onNavigate: (page: string) => void;
@@ -13,9 +14,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Column 1: Company Profile */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="bg-white px-3 py-1.5 rounded-lg inline-block shadow-xs">
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate('home');
+                }}
+                className="bg-white px-3 py-1.5 rounded-lg inline-block shadow-xs hover:opacity-95 transition-opacity"
+              >
                 <img src="/logo.png" alt="SwiftDrive Rentals" className="h-10 w-auto object-contain" />
-              </div>
+              </a>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
               Premium self-drive and chauffeur vehicle rentals headquartered in Negombo, Sri Lanka.
@@ -34,49 +42,64 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </h3>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('catalogue')}
+                <a
+                  href="/catalogue"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('catalogue');
+                  }}
                   className="hover:text-teal-400 transition-colors"
                 >
                   Vehicle Fleet Catalogue
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('about')}
+                <a
+                  href="/about"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('about');
+                  }}
                   className="hover:text-teal-400 transition-colors"
                 >
                   About SwiftDrive Rentals
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('blog')}
+                <a
+                  href="/blog"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('blog');
+                  }}
                   className="hover:text-teal-400 transition-colors"
                 >
                   Sri Lanka Road-Trip Guides
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('terms')}
+                <a
+                  href="/terms"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('terms');
+                  }}
                   className="hover:text-teal-400 transition-colors"
                 >
                   Rental Terms & Insurance Policy
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('contact')}
+                <a
+                  href="/contact"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('contact');
+                  }}
                   className="hover:text-teal-400 transition-colors"
                 >
                   Inquiries & Airport Desk
-                </button>
+                </a>
               </li>
             </ul>
           </div>
