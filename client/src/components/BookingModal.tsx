@@ -177,6 +177,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleReset}
+      preventClose={isProcessing}
       title={
         step === 'details'
           ? `Reserve ${vehicle.make} ${vehicle.model} (${vehicle.year})`
@@ -193,7 +194,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
             <img
               src={vehicle.main_image_url}
-              alt={vehicle.model}
+              alt={`${vehicle.make} ${vehicle.model}`}
               className="w-16 h-12 object-cover rounded border border-slate-200"
             />
             <div className="flex-1">
@@ -217,29 +218,37 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Date Picker Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Pick-up Date
+              <label htmlFor="booking-pickup-date" className="block text-xs font-semibold text-slate-700 mb-1">
+                Pick-up Date <span className="text-rose-600">*</span>
               </label>
               <input
+                id="booking-pickup-date"
                 type="date"
                 min={todayStr}
                 value={pickupDate}
                 onChange={(e) => setPickupDate(e.target.value)}
                 required
+                aria-required="true"
+                aria-invalid={Boolean(quoteError)}
+                aria-describedby={quoteError ? 'booking-quote-error' : undefined}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Return Date
+              <label htmlFor="booking-return-date" className="block text-xs font-semibold text-slate-700 mb-1">
+                Return Date <span className="text-rose-600">*</span>
               </label>
               <input
+                id="booking-return-date"
                 type="date"
                 min={pickupDate}
                 value={returnDate}
                 onChange={(e) => setReturnDate(e.target.value)}
                 required
+                aria-required="true"
+                aria-invalid={Boolean(quoteError)}
+                aria-describedby={quoteError ? 'booking-quote-error' : undefined}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:border-transparent"
               />
             </div>
@@ -248,10 +257,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Locations */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="booking-pickup-location" className="block text-xs font-semibold text-slate-700 mb-1">
                 Pick-up Location
               </label>
               <select
+                id="booking-pickup-location"
                 value={pickupLocation}
                 onChange={(e) => setPickupLocation(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md bg-white"
@@ -263,10 +273,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="booking-return-location" className="block text-xs font-semibold text-slate-700 mb-1">
                 Return Location
               </label>
               <select
+                id="booking-return-location"
                 value={returnLocation}
                 onChange={(e) => setReturnLocation(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md bg-white"
@@ -280,10 +291,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Special Requests */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="booking-special-requests" className="block text-xs font-semibold text-slate-700 mb-1">
               Flight Details or Special Requirements (Optional)
             </label>
             <input
+              id="booking-special-requests"
               type="text"
               placeholder="e.g., Flight UL504 arrives 14:30; request baby car seat"
               value={specialRequests}
@@ -294,8 +306,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Live Quote Breakdown Card */}
           {quoteError ? (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2.5 text-xs text-rose-800">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <div id="booking-quote-error" role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2.5 text-xs text-rose-800">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" aria-hidden="true" />
               <span>{quoteError}</span>
             </div>
           ) : quote ? (
@@ -323,7 +335,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
           ) : isQuoting ? (
-            <div className="text-center py-3 text-xs text-slate-500">
+            <div className="text-center py-3 text-xs text-slate-500" aria-live="polite">
               Calculating verified server tariff...
             </div>
           ) : null}
@@ -335,7 +347,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <button
                 type="button"
                 onClick={onNavigateLogin}
-                className="font-bold underline hover:text-amber-950"
+                className="font-bold underline hover:text-amber-950 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded px-1"
               >
                 Sign In Now
               </button>
@@ -347,17 +359,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md"
+              className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isProcessing || !quote || Boolean(quoteError) || Boolean(availability && !availability.available)}
-              className="px-5 py-2 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-1.5"
+              aria-busy={isProcessing}
+              className="px-5 py-2 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#0F766E] focus:ring-offset-2"
             >
               <span>{isProcessing ? 'Reserving...' : 'Continue to Payment'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
         </form>
@@ -387,11 +400,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Payment Method Selector */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">
+            <div id="payment-method-heading" className="block text-xs font-semibold text-slate-700 mb-2">
               Select Payment Method (Test Sandbox)
-            </label>
-            <div className="grid grid-cols-1 gap-2">
+            </div>
+            <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-labelledby="payment-method-heading">
               <label
+                htmlFor="payment-card-sandbox"
                 className={`flex items-center gap-3 p-3 rounded-lg border text-xs cursor-pointer ${
                   paymentMethod === 'card_sandbox'
                     ? 'border-teal-600 bg-teal-50/50 text-[#102A43] font-semibold'
@@ -399,6 +413,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 }`}
               >
                 <input
+                  id="payment-card-sandbox"
                   type="radio"
                   name="paymentMethod"
                   value="card_sandbox"
@@ -406,7 +421,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   onChange={() => setPaymentMethod('card_sandbox')}
                   className="text-teal-600 focus:ring-teal-500"
                 />
-                <CreditCard className="w-4 h-4 text-teal-700 shrink-0" />
+                <CreditCard className="w-4 h-4 text-teal-700 shrink-0" aria-hidden="true" />
                 <div className="flex-1">
                   <div>Visa / Mastercard (Test Sandbox Gateway)</div>
                   <div className="text-[11px] font-normal text-slate-500">
@@ -416,6 +431,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </label>
 
               <label
+                htmlFor="payment-bank-transfer"
                 className={`flex items-center gap-3 p-3 rounded-lg border text-xs cursor-pointer ${
                   paymentMethod === 'bank_transfer_test'
                     ? 'border-teal-600 bg-teal-50/50 text-[#102A43] font-semibold'
@@ -423,6 +439,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 }`}
               >
                 <input
+                  id="payment-bank-transfer"
                   type="radio"
                   name="paymentMethod"
                   value="bank_transfer_test"
@@ -439,6 +456,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </label>
 
               <label
+                htmlFor="payment-cash-pickup"
                 className={`flex items-center gap-3 p-3 rounded-lg border text-xs cursor-pointer ${
                   paymentMethod === 'cash_on_pickup'
                     ? 'border-teal-600 bg-teal-50/50 text-[#102A43] font-semibold'
@@ -446,6 +464,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 }`}
               >
                 <input
+                  id="payment-cash-pickup"
                   type="radio"
                   name="paymentMethod"
                   value="cash_on_pickup"
@@ -472,15 +491,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-slate-600 mb-1">
+                <label htmlFor="booking-card-number" className="block text-[11px] font-medium text-slate-600 mb-1">
                   Card Number
                 </label>
                 <input
+                  id="booking-card-number"
                   type="text"
                   value={cardNumber}
                   onChange={(e) => setCardNumber(e.target.value)}
                   required
-                  className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded font-mono"
+                  aria-required="true"
+                  className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded font-mono focus:ring-2 focus:ring-teal-600"
                 />
               </div>
 
@@ -489,14 +510,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setCardNumber('4242 4242 4242 4242')}
-                  className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-200 hover:bg-emerald-200"
+                  className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-200 hover:bg-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   Fill Valid Test Card (Success)
                 </button>
                 <button
                   type="button"
                   onClick={() => setCardNumber('4000 0000 0000 0000')}
-                  className="text-[10px] px-2 py-0.5 bg-rose-100 text-rose-800 rounded border border-rose-200 hover:bg-rose-200"
+                  className="text-[10px] px-2 py-0.5 bg-rose-100 text-rose-800 rounded border border-rose-200 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 >
                   Fill Decline Card (...0000)
                 </button>
@@ -504,27 +525,31 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-600 mb-1">
+                  <label htmlFor="booking-card-expiry" className="block text-[11px] font-medium text-slate-600 mb-1">
                     Expiry (MM/YY)
                   </label>
                   <input
+                    id="booking-card-expiry"
                     type="text"
                     value={cardExpiry}
                     onChange={(e) => setCardExpiry(e.target.value)}
                     required
-                    className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded font-mono"
+                    aria-required="true"
+                    className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded font-mono focus:ring-2 focus:ring-teal-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-600 mb-1">
+                  <label htmlFor="booking-card-cvc" className="block text-[11px] font-medium text-slate-600 mb-1">
                     Security CVC
                   </label>
                   <input
+                    id="booking-card-cvc"
                     type="text"
                     value={cardCvc}
                     onChange={(e) => setCardCvc(e.target.value)}
                     required
-                    className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded font-mono"
+                    aria-required="true"
+                    className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded font-mono focus:ring-2 focus:ring-teal-600"
                   />
                 </div>
               </div>
@@ -535,17 +560,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md"
+              className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isProcessing}
-              className="px-5 py-2 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors disabled:bg-slate-300 flex items-center gap-1.5"
+              aria-busy={isProcessing}
+              className="px-5 py-2 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors disabled:bg-slate-300 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#0F766E] focus:ring-offset-2"
             >
               <span>{isProcessing ? 'Processing...' : 'Confirm & Authorize'}</span>
-              <CheckCircle2 className="w-3.5 h-3.5" />
+              <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
         </form>
@@ -553,9 +579,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
       {/* STEP 3: Booking Confirmation Receipt */}
       {step === 'confirmed' && createdBooking && (
-        <div className="space-y-5 text-center py-2">
+        <div role="status" aria-live="polite" className="space-y-5 text-center py-2">
           <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-xs">
-            <CheckCircle2 className="w-8 h-8" />
+            <CheckCircle2 className="w-8 h-8" aria-hidden="true" />
           </div>
 
           <div>
@@ -603,7 +629,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <button
               type="button"
               onClick={handleReset}
-              className="w-full py-2.5 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors"
+              className="w-full py-2.5 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#0F766E] focus:ring-offset-2"
             >
               Done & Return to Fleet
             </button>

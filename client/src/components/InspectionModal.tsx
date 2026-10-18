@@ -68,6 +68,7 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      preventClose={isSubmitting}
       title={`${reportType === 'pickup' ? 'Pick-up Handover' : 'Return Inspection'} Checklist: ${booking.booking_reference}`}
       maxWidth="lg"
     >
@@ -83,28 +84,31 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({
 
         {/* Odometer Reading */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Current Odometer Reading (km)
+          <label htmlFor="inspection-odometer" className="block text-xs font-semibold text-slate-700 mb-1">
+            Current Odometer Reading (km) <span className="text-rose-600">*</span>
           </label>
           <input
+            id="inspection-odometer"
             type="number"
             min="0"
             value={odometerReading}
             onChange={(e) => setOdometerReading(Number(e.target.value))}
             required
-            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md font-mono"
+            aria-required="true"
+            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md font-mono focus:ring-2 focus:ring-teal-600 focus:outline-none"
           />
         </div>
 
         {/* Fuel Level */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Fuel Gauge Level
+          <label htmlFor="inspection-fuel" className="block text-xs font-semibold text-slate-700 mb-1">
+            Fuel Gauge Level <span className="text-rose-600">*</span>
           </label>
           <select
+            id="inspection-fuel"
             value={fuelLevel}
             onChange={(e: any) => setFuelLevel(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md bg-white"
+            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-teal-600 focus:outline-none"
           >
             <option value="full">Full Tank (100%)</option>
             <option value="three_quarters">3/4 Tank (75%)</option>
@@ -116,44 +120,49 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({
 
         {/* Exterior Condition */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Exterior Bodywork Condition
+          <label htmlFor="inspection-exterior" className="block text-xs font-semibold text-slate-700 mb-1">
+            Exterior Bodywork Condition <span className="text-rose-600">*</span>
           </label>
           <textarea
+            id="inspection-exterior"
             rows={2}
             value={exteriorCondition}
             onChange={(e) => setExteriorCondition(e.target.value)}
             required
-            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
+            aria-required="true"
+            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
           />
         </div>
 
         {/* Interior Condition */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Interior & Accessories Condition
+          <label htmlFor="inspection-interior" className="block text-xs font-semibold text-slate-700 mb-1">
+            Interior & Accessories Condition <span className="text-rose-600">*</span>
           </label>
           <textarea
+            id="inspection-interior"
             rows={2}
             value={interiorCondition}
             onChange={(e) => setInteriorCondition(e.target.value)}
             required
-            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
+            aria-required="true"
+            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
           />
         </div>
 
         {/* Damage Notes */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+          <label htmlFor="inspection-damage" className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" aria-hidden="true" />
             <span>Damage or Defect Notes (If any)</span>
           </label>
           <textarea
+            id="inspection-damage"
             rows={2}
             placeholder="Record any minor scratches, dents, or missing tools to ensure deposit reconciliation."
             value={damageNotes}
             onChange={(e) => setDamageNotes(e.target.value)}
-            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
+            className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
           />
         </div>
 
@@ -161,17 +170,18 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors flex items-center gap-1.5"
+            aria-busy={isSubmitting}
+            className="px-5 py-2 text-xs font-semibold text-white bg-[#0F766E] hover:bg-[#0D655E] rounded-md transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#0F766E] focus:ring-offset-2 disabled:opacity-50"
           >
             <span>{isSubmitting ? 'Recording...' : `Submit ${reportType === 'pickup' ? 'Pick-up' : 'Return'} Inspection`}</span>
-            <ClipboardCheck className="w-4 h-4" />
+            <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </form>

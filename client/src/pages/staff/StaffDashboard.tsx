@@ -394,13 +394,14 @@ export const StaffDashboard: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="inquiry-status-select" className="block text-xs font-semibold text-slate-700 mb-1">
                 Update Status
               </label>
               <select
+                id="inquiry-status-select"
                 value={inquiryStatus}
                 onChange={(e: any) => setInquiryStatus(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white"
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-teal-600 focus:outline-none"
               >
                 <option value="new">New (Unassigned)</option>
                 <option value="in_progress">In Progress (Contacting Renter)</option>
@@ -409,15 +410,16 @@ export const StaffDashboard: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="inquiry-response-notes" className="block text-xs font-semibold text-slate-700 mb-1">
                 Internal Operational Notes / Staff Response
               </label>
               <textarea
+                id="inquiry-response-notes"
                 rows={3}
                 value={responseNotes}
                 onChange={(e) => setResponseNotes(e.target.value)}
                 placeholder="e.g. Sent flight tracking confirmation and vehicle handover guidelines via WhatsApp."
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
               />
             </div>
 

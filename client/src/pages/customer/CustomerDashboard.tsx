@@ -473,6 +473,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
       <Modal
         isOpen={cancelModalOpen}
         onClose={() => setCancelModalOpen(false)}
+        preventClose={isCancelling}
         title="Confirm Booking Cancellation"
         maxWidth="md"
       >
@@ -483,10 +484,11 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
             </p>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label htmlFor="cancel-booking-reason" className="block text-xs font-semibold text-slate-700 mb-1">
                 Reason for Cancellation (Optional)
               </label>
               <textarea
+                id="cancel-booking-reason"
                 rows={3}
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
@@ -499,14 +501,15 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setCancelModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md"
+                className="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
               >
                 Keep Booking
               </button>
               <button
                 type="submit"
                 disabled={isCancelling}
-                className="px-4 py-2 text-xs font-semibold text-white bg-rose-700 hover:bg-rose-800 rounded-md transition-colors"
+                aria-busy={isCancelling}
+                className="px-4 py-2 text-xs font-semibold text-white bg-rose-700 hover:bg-rose-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-50"
               >
                 {isCancelling ? 'Cancelling...' : 'Confirm Cancellation'}
               </button>
