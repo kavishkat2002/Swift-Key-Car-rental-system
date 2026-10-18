@@ -6,20 +6,31 @@ import db from '../db/db.js';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/jwt.js';
 import { authenticate } from '../middleware/auth.js';
 import { logAudit } from '../services/auditService.js';
+import { loginRateLimiter, registerRateLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
+const SPECIAL_CHAR_REGEX = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/;
+const NUMBER_REGEX = /[0-9]/;
+
 const registerSchema = z.object({
   email: z.string().email('Invalid email address format'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters long')
+    .refine((val) => NUMBER_REGEX.test(val), {
+      message: 'Password must contain at least one number'
+    })
+    .refine((val) => SPECIAL_CHAR_REGEX.test(val), {
+      message: 'Password must contain at least one special character (!@#$%^&* etc.)'
+    }),
   fullName: z.string().min(2, 'Full name is required'),
   phone: z.string().min(8, 'Valid phone number is required'),
   drivingLicenseNumber: z.string().optional(),
   address: z.string().optional()
 });
 
-// POST /api/auth/register
-router.post('/register', (req: Request, res: Response): void => {
+// POST /api/auth/register (Rate-limited, Strong Password Enforced)
+router.post('/register', registerRateLimiter, (req: Request, res: Response): void => {
   try {
     const parseResult = registerSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -99,8 +110,8 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 });
 
-// POST /api/auth/login
-router.post('/login', (req: Request, res: Response): void => {
+// POST /api/auth/login (Rate-limited against brute-force)
+router.post('/login', loginRateLimiter, (req: Request, res: Response): void => {
   try {
     const parseResult = loginSchema.safeParse(req.body);
     if (!parseResult.success) {

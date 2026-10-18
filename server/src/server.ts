@@ -20,6 +20,11 @@ const __dirname = path.dirname(__filename);
 export const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Trust reverse proxy (e.g. Render, Nginx, AWS ALB) if in production or configured
+if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
+
 // Security and middleware
 app.use(cors({
   origin: true,

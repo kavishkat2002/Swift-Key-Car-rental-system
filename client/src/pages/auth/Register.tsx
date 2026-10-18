@@ -29,8 +29,18 @@ export const Register: React.FC<RegisterProps> = ({ onSuccess, onNavigateLogin }
       return;
     }
 
-    if (password.length < 6) {
-      showError('Password must be at least 6 characters long.');
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      showError('Password must contain at least one number.');
+      return;
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+      showError('Password must contain at least one special character (!@#$%^&* etc.).');
       return;
     }
 
@@ -109,7 +119,7 @@ export const Register: React.FC<RegisterProps> = ({ onSuccess, onNavigateLogin }
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Password (min 6) *
+                Password (min 8, 1 number, 1 special char) *
               </label>
               <div className="relative">
                 <input

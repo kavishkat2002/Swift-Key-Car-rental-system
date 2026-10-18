@@ -3,6 +3,8 @@ import request from 'supertest';
 import app from '../src/server.js';
 import db from '../src/db/db.js';
 import { seedDatabase } from '../src/db/seed.js';
+import { validateJwtSecret, DEFAULT_DEV_TEST_SECRET } from '../src/config/jwt.js';
+import { resetRateLimits } from '../src/middleware/rateLimiter.js';
 
 describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () => {
   let customerToken = '';
@@ -48,6 +50,67 @@ describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () 
       expect(res.status).toBe(409);
       expect(res.body.success).toBe(false);
       expect(res.body.error).toContain('already exists');
+    });
+
+    it('should reject registration when password is shorter than 8 characters', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'shortpass@example.com',
+          password: 'Pass@1',
+          fullName: 'Short Pass Driver',
+          phone: '+94 77 123 4567'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('at least 8 characters');
+    });
+
+    it('should reject registration when password lacks a number', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'nonumber@example.com',
+          password: 'Password@NoNumber',
+          fullName: 'No Number Driver',
+          phone: '+94 77 123 4567'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('contain at least one number');
+    });
+
+    it('should reject registration when password lacks a special character', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'nospecial@example.com',
+          password: 'Password1234',
+          fullName: 'No Special Driver',
+          phone: '+94 77 123 4567'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('contain at least one special character');
+    });
+
+    it('should accept registration with a valid strong password (min 8 chars, number, special char)', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'strongpass@example.com',
+          password: 'Swift#Driver2026',
+          fullName: 'Strong Password Driver',
+          phone: '+94 77 888 9999'
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.user.email).toBe('strongpass@example.com');
+      expect(res.body.token).toBeDefined();
     });
 
     it('should log in customer with valid credentials and return JWT', async () => {
@@ -543,6 +606,58 @@ describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () 
       expect(res.status).toBe(409);
       expect(res.body.success).toBe(false);
       expect(res.body.error).toContain('already exists');
+    });
+  });
+
+  describe('8. Authentication Security Hardening (Rate Limiting & JWT Secret Guard)', () => {
+    it('should enforce rate-limiting threshold on login and return HTTP 429 with retry headers', async () => {
+      resetRateLimits();
+
+      // Send 10 rapid login attempts with x-test-rate-limit header enabled
+      for (let i = 0; i < 10; i++) {
+        await request(app)
+          .post('/api/auth/login')
+          .set('x-test-rate-limit', 'true')
+          .send({ email: 'kavishka@example.com', password: 'WrongPassword' });
+      }
+
+      // 11th request must be blocked with HTTP 429 Too Many Requests
+      const blockedRes = await request(app)
+        .post('/api/auth/login')
+        .set('x-test-rate-limit', 'true')
+        .send({ email: 'kavishka@example.com', password: 'Customer@1234' });
+
+      expect(blockedRes.status).toBe(429);
+      expect(blockedRes.body.success).toBe(false);
+      expect(blockedRes.body.error).toContain('Too many login attempts');
+      expect(blockedRes.headers['retry-after']).toBeDefined();
+      expect(blockedRes.headers['ratelimit-remaining']).toBe('0');
+
+      // Reset limiter for subsequent tests
+      resetRateLimits();
+    });
+
+    it('should fail startup in production when JWT_SECRET is missing, default, or less than 32 characters', () => {
+      // Missing secret in production
+      expect(() => validateJwtSecret(undefined, 'production')).toThrow(/FATAL CONFIGURATION ERROR/);
+      expect(() => validateJwtSecret('', 'production')).toThrow(/FATAL CONFIGURATION ERROR/);
+
+      // Known academic fallback in production
+      expect(() => validateJwtSecret(DEFAULT_DEV_TEST_SECRET, 'production')).toThrow(/FATAL CONFIGURATION ERROR/);
+      expect(() => validateJwtSecret('swiftdrive-secret-key-cse5009-academic-2026', 'production')).toThrow(/FATAL CONFIGURATION ERROR/);
+
+      // Secret shorter than 32 characters in production
+      expect(() => validateJwtSecret('short_secret_under_32_chars', 'production')).toThrow(/FATAL CONFIGURATION ERROR/);
+    });
+
+    it('should accept a cryptographically secure JWT_SECRET of at least 32 characters in production', () => {
+      const validProdSecret = 'a8f5f167f44f4964e6c998dee827110c3b889385cfe3460f0156ecd123456789';
+      expect(validateJwtSecret(validProdSecret, 'production')).toBe(validProdSecret);
+    });
+
+    it('should fallback safely to academic development secret in non-production environments', () => {
+      expect(validateJwtSecret(undefined, 'development')).toBe(DEFAULT_DEV_TEST_SECRET);
+      expect(validateJwtSecret(undefined, 'test')).toBe(DEFAULT_DEV_TEST_SECRET);
     });
   });
 });
