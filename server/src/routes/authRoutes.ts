@@ -126,17 +126,8 @@ router.post('/login', (req: Request, res: Response): void => {
       address: string | null;
     } | undefined;
 
-    const isAdminPassword = (password === 'admin@123' || password === 'Admin@123' || password === 'Admin@1234' || password === 'admin@1234');
-    const isStaffPassword = (password === 'staff@123' || password === 'Staff@123' || password === 'Staff@1234' || password === 'staff@1234');
-    const isCustomerPassword = (password === 'customer@123' || password === 'Customer@123' || password === 'Customer@1234' || password === 'customer@1234' || password === 'Password@123');
-
     const isPasswordValid = Boolean(
-      userRecord && (
-        bcrypt.compareSync(password, userRecord.password_hash) ||
-        (userRecord.role === 'admin' && isAdminPassword) ||
-        (userRecord.role === 'staff' && isStaffPassword) ||
-        (userRecord.role === 'customer' && isCustomerPassword)
-      )
+      userRecord && bcrypt.compareSync(password, userRecord.password_hash)
     );
 
     if (!userRecord || !isPasswordValid) {

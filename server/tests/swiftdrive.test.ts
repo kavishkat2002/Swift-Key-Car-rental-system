@@ -80,6 +80,47 @@ describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () 
       expect(res.body.error).toContain('Invalid email address or password');
     });
 
+    it('should reject hardcoded backdoor passwords that do not match the stored hash', async () => {
+      // Test that previous bypass password admin@123 cannot log into admin account
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'admin@swiftdrive.lk',
+          password: 'admin@123'
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Invalid email address or password');
+
+      // Test that customer@123 cannot log into customer account
+      const resCust = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'kavishka@example.com',
+          password: 'customer@123'
+        });
+
+      expect(resCust.status).toBe(401);
+      expect(resCust.body.success).toBe(false);
+    });
+
+    it('should authenticate valid seeded demo accounts only through normal bcrypt verification', async () => {
+      // kavishka@example.com with Customer@1234
+      const custRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'kavishka@example.com', password: 'Customer@1234' });
+      expect(custRes.status).toBe(200);
+      expect(custRes.body.user.role).toBe('customer');
+
+      // john.smith@example.com with Customer@1234
+      const touristRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'john.smith@example.com', password: 'Customer@1234' });
+      expect(touristRes.status).toBe(200);
+      expect(touristRes.body.user.role).toBe('customer');
+    });
+
     it('should authenticate staff and admin users', async () => {
       const staffRes = await request(app)
         .post('/api/auth/login')
@@ -390,6 +431,118 @@ describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () 
       const listRes = await request(app).get('/api/reviews');
       expect(listRes.status).toBe(200);
       expect(listRes.body.reviews.some((r: any) => r.comment.includes('Fantastic experience'))).toBe(true);
+    });
+  });
+
+  describe('7. Partial Vehicle Updates & Data Integrity (Admin)', () => {
+    it('should update only the vehicle status while strictly preserving all other vehicle fields', async () => {
+      // Fetch vehicle 1 initial state (Suzuki Alto 800)
+      const initial = db.prepare('SELECT * FROM vehicles WHERE id = 1').get() as any;
+      expect(initial.status).toBe('available');
+
+      const res = await request(app)
+        .put('/api/admin/vehicles/1')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'maintenance' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toContain('updated successfully');
+
+      // Verify that status changed to 'maintenance' and all other fields were strictly preserved
+      const updated = db.prepare('SELECT * FROM vehicles WHERE id = 1').get() as any;
+      expect(updated.status).toBe('maintenance');
+      expect(updated.make).toBe(initial.make);
+      expect(updated.model).toBe(initial.model);
+      expect(updated.year).toBe(initial.year);
+      expect(updated.category).toBe(initial.category);
+      expect(updated.daily_rate_lkr).toBe(initial.daily_rate_lkr);
+      expect(updated.weekly_rate_lkr).toBe(initial.weekly_rate_lkr);
+      expect(updated.deposit_lkr).toBe(initial.deposit_lkr);
+      expect(updated.registration_number).toBe(initial.registration_number);
+      expect(updated.seating_capacity).toBe(initial.seating_capacity);
+
+      // Revert status back to available
+      await request(app)
+        .put('/api/admin/vehicles/1')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'available' });
+    });
+
+    it('should update only the daily rate while preserving unrelated fields', async () => {
+      const initial = db.prepare('SELECT * FROM vehicles WHERE id = 2').get() as any;
+      const originalRate = initial.daily_rate_lkr;
+
+      const res = await request(app)
+        .put('/api/admin/vehicles/2')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ daily_rate_lkr: 14500 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      const updated = db.prepare('SELECT * FROM vehicles WHERE id = 2').get() as any;
+      expect(updated.daily_rate_lkr).toBe(14500);
+      expect(updated.make).toBe(initial.make);
+      expect(updated.model).toBe(initial.model);
+      expect(updated.weekly_rate_lkr).toBe(initial.weekly_rate_lkr);
+      expect(updated.registration_number).toBe(initial.registration_number);
+      expect(updated.status).toBe(initial.status);
+
+      // Revert
+      await request(app)
+        .put('/api/admin/vehicles/2')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ daily_rate_lkr: originalRate });
+    });
+
+    it('should reject invalid field values with 400 client error', async () => {
+      // Negative daily rate
+      const resRate = await request(app)
+        .put('/api/admin/vehicles/1')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ daily_rate_lkr: -5000 });
+      expect(resRate.status).toBe(400);
+      expect(resRate.body.success).toBe(false);
+
+      // Invalid category
+      const resCategory = await request(app)
+        .put('/api/admin/vehicles/1')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ category: 'invalid_category_xyz' });
+      expect(resCategory.status).toBe(400);
+      expect(resCategory.body.success).toBe(false);
+
+      // Invalid status
+      const resStatus = await request(app)
+        .put('/api/admin/vehicles/1')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'destroyed' });
+      expect(resStatus.status).toBe(400);
+      expect(resStatus.body.success).toBe(false);
+    });
+
+    it('should return 404 for updating a nonexistent vehicle ID', async () => {
+      const res = await request(app)
+        .put('/api/admin/vehicles/99999')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'maintenance' });
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Vehicle not found');
+    });
+
+    it('should enforce registration-number uniqueness and reject duplicates with 409', async () => {
+      // Vehicle 1 has registration 'WP-CBB-1290'. Attempt to assign it to Vehicle 2
+      const res = await request(app)
+        .put('/api/admin/vehicles/2')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ registration_number: 'WP-CBB-1290' });
+
+      expect(res.status).toBe(409);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('already exists');
     });
   });
 });

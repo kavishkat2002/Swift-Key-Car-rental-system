@@ -188,49 +188,138 @@ router.post('/vehicles', (req: Request, res: Response): void => {
   }
 });
 
-// PUT /api/admin/vehicles/:id - Edit vehicle specifications and tariffs
+const updateVehicleSchema = z.object({
+  make: z.string().min(2, 'Make must be at least 2 characters').optional(),
+  model: z.string().min(2, 'Model must be at least 2 characters').optional(),
+  year: z.number().int().min(2010, 'Year must be between 2010 and 2030').max(2030, 'Year must be between 2010 and 2030').optional(),
+  category: z.enum(['economy', 'suv', 'van', 'luxury']).optional(),
+  transmission: z.enum(['automatic', 'manual']).optional(),
+  fuel_type: z.enum(['petrol', 'diesel', 'hybrid', 'electric']).optional(),
+  seating_capacity: z.number().int().positive('Seating capacity must be a positive integer').optional(),
+  daily_rate_lkr: z.number().positive('Daily rate must be greater than 0').optional(),
+  weekly_rate_lkr: z.number().positive('Weekly rate must be greater than 0').optional(),
+  deposit_lkr: z.number().nonnegative('Deposit must be 0 or greater').optional(),
+  registration_number: z.string().min(3, 'Registration number must be at least 3 characters').optional(),
+  status: z.enum(['available', 'rented', 'maintenance', 'archived']).optional(),
+  mileage_km: z.number().int().nonnegative('Mileage must be 0 or greater').optional(),
+  features: z.array(z.string()).or(z.string()).optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters').optional(),
+  main_image_url: z.string().url('Main image URL must be a valid URL').optional()
+});
+
+// PUT /api/admin/vehicles/:id - Edit vehicle specifications and tariffs (Supports Partial Updates)
 router.put('/vehicles/:id', (req: Request, res: Response): void => {
   try {
     const vehicleId = Number(req.params.id);
-    const {
-      make, model, year, category, transmission, fuel_type,
-      seating_capacity, daily_rate_lkr, weekly_rate_lkr, deposit_lkr,
-      status, mileage_km, description, features, main_image_url
-    } = req.body;
+    if (!vehicleId || isNaN(vehicleId) || vehicleId <= 0) {
+      res.status(400).json({ success: false, error: 'Invalid vehicle ID.' });
+      return;
+    }
 
-    const vehicle = db.prepare('SELECT id FROM vehicles WHERE id = ?').get(vehicleId);
+    const parseResult = updateVehicleSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({ success: false, error: parseResult.error.issues[0]?.message || 'Validation failed.' });
+      return;
+    }
+
+    const data = parseResult.data;
+
+    const vehicle = db.prepare('SELECT id, registration_number FROM vehicles WHERE id = ?').get(vehicleId) as { id: number; registration_number: string } | undefined;
     if (!vehicle) {
       res.status(404).json({ success: false, error: 'Vehicle not found.' });
       return;
     }
 
-    const featuresStr = Array.isArray(features) ? JSON.stringify(features) : features;
+    // If registration number is supplied, check uniqueness against other vehicles
+    if (data.registration_number !== undefined) {
+      const normalizedReg = data.registration_number.toUpperCase().trim();
+      const regConflict = db.prepare('SELECT id FROM vehicles WHERE registration_number = ? AND id != ?').get(normalizedReg, vehicleId);
+      if (regConflict) {
+        res.status(409).json({ success: false, error: 'A vehicle with this registration number already exists.' });
+        return;
+      }
+    }
 
-    db.prepare(`
-      UPDATE vehicles
-      SET make = COALESCE(?, make),
-          model = COALESCE(?, model),
-          year = COALESCE(?, year),
-          category = COALESCE(?, category),
-          transmission = COALESCE(?, transmission),
-          fuel_type = COALESCE(?, fuel_type),
-          seating_capacity = COALESCE(?, seating_capacity),
-          daily_rate_lkr = COALESCE(?, daily_rate_lkr),
-          weekly_rate_lkr = COALESCE(?, weekly_rate_lkr),
-          deposit_lkr = COALESCE(?, deposit_lkr),
-          status = COALESCE(?, status),
-          mileage_km = COALESCE(?, mileage_km),
-          description = COALESCE(?, description),
-          features = COALESCE(?, features),
-          main_image_url = COALESCE(?, main_image_url),
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(
-      make, model, year, category, transmission, fuel_type,
-      seating_capacity, daily_rate_lkr, weekly_rate_lkr, deposit_lkr,
-      status, mileage_km, description, featuresStr, main_image_url,
-      vehicleId
-    );
+    // Build dynamic UPDATE query containing ONLY supplied fields to prevent undefined values or overwriting existing data
+    const updates: string[] = [];
+    const params: (string | number)[] = [];
+
+    if (data.make !== undefined) {
+      updates.push('make = ?');
+      params.push(data.make.trim());
+    }
+    if (data.model !== undefined) {
+      updates.push('model = ?');
+      params.push(data.model.trim());
+    }
+    if (data.year !== undefined) {
+      updates.push('year = ?');
+      params.push(data.year);
+    }
+    if (data.category !== undefined) {
+      updates.push('category = ?');
+      params.push(data.category);
+    }
+    if (data.transmission !== undefined) {
+      updates.push('transmission = ?');
+      params.push(data.transmission);
+    }
+    if (data.fuel_type !== undefined) {
+      updates.push('fuel_type = ?');
+      params.push(data.fuel_type);
+    }
+    if (data.seating_capacity !== undefined) {
+      updates.push('seating_capacity = ?');
+      params.push(data.seating_capacity);
+    }
+    if (data.daily_rate_lkr !== undefined) {
+      updates.push('daily_rate_lkr = ?');
+      params.push(data.daily_rate_lkr);
+    }
+    if (data.weekly_rate_lkr !== undefined) {
+      updates.push('weekly_rate_lkr = ?');
+      params.push(data.weekly_rate_lkr);
+    }
+    if (data.deposit_lkr !== undefined) {
+      updates.push('deposit_lkr = ?');
+      params.push(data.deposit_lkr);
+    }
+    if (data.registration_number !== undefined) {
+      updates.push('registration_number = ?');
+      params.push(data.registration_number.toUpperCase().trim());
+    }
+    if (data.status !== undefined) {
+      updates.push('status = ?');
+      params.push(data.status);
+    }
+    if (data.mileage_km !== undefined) {
+      updates.push('mileage_km = ?');
+      params.push(data.mileage_km);
+    }
+    if (data.features !== undefined) {
+      const featuresStr = Array.isArray(data.features) ? JSON.stringify(data.features) : data.features;
+      updates.push('features = ?');
+      params.push(featuresStr);
+    }
+    if (data.description !== undefined) {
+      updates.push('description = ?');
+      params.push(data.description.trim());
+    }
+    if (data.main_image_url !== undefined) {
+      updates.push('main_image_url = ?');
+      params.push(data.main_image_url.trim());
+    }
+
+    if (updates.length > 0) {
+      updates.push('updated_at = CURRENT_TIMESTAMP');
+      params.push(vehicleId);
+
+      db.prepare(`
+        UPDATE vehicles
+        SET ${updates.join(', ')}
+        WHERE id = ?
+      `).run(...params);
+    }
 
     logAudit({
       userId: req.user!.id,
@@ -238,12 +327,13 @@ router.put('/vehicles/:id', (req: Request, res: Response): void => {
       action: 'VEHICLE_UPDATED',
       entityType: 'VEHICLE',
       entityId: vehicleId,
-      details: { updatedFields: Object.keys(req.body) },
+      details: { updatedFields: Object.keys(data) },
       ipAddress: req.ip
     });
 
     res.json({ success: true, message: 'Vehicle specifications updated successfully.' });
   } catch (error) {
+    console.error('Error updating vehicle:', error);
     res.status(500).json({ success: false, error: 'Failed to update vehicle.' });
   }
 });
