@@ -16,14 +16,41 @@ export const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const trimmedName = fullName.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedSubject = subject.trim();
+    const trimmedMessage = message.trim();
+
+    if (trimmedName.length < 2) {
+      showError('Full name must be at least 2 characters.');
+      return;
+    }
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      showError('Please enter a valid email address.');
+      return;
+    }
+    if (trimmedPhone.length < 8) {
+      showError('Contact phone must be at least 8 characters.');
+      return;
+    }
+    if (trimmedSubject.length < 3) {
+      showError('Inquiry subject must be at least 3 characters.');
+      return;
+    }
+    if (trimmedMessage.length < 10) {
+      showError('Detailed message must be at least 10 characters.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const res = await api.inquiries.submit({
-        fullName,
-        email,
-        phone,
-        subject,
-        message
+        fullName: trimmedName,
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        subject: trimmedSubject,
+        message: trimmedMessage
       });
 
       showSuccess(`Inquiry #${res.inquiryId} submitted! Our operations staff will contact you via WhatsApp / email.`);
@@ -127,6 +154,7 @@ export const Contact: React.FC = () => {
                 <input
                   type="text"
                   required
+                  maxLength={100}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
@@ -141,6 +169,7 @@ export const Contact: React.FC = () => {
                 <input
                   type="email"
                   required
+                  maxLength={255}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
@@ -157,6 +186,7 @@ export const Contact: React.FC = () => {
                 <input
                   type="tel"
                   required
+                  maxLength={30}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"
@@ -189,6 +219,7 @@ export const Contact: React.FC = () => {
               <textarea
                 rows={4}
                 required
+                maxLength={3000}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-600 focus:outline-none"

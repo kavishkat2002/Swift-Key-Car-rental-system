@@ -250,13 +250,30 @@ router.get('/inquiries', (_req: Request, res: Response): void => {
 });
 
 // PUT /api/staff/inquiries/:id - Respond and update inquiry status
+const updateInquirySchema = z.object({
+  status: z.enum(['new', 'in_progress', 'resolved']),
+  responseNotes: z.string().trim().max(2000, 'Response notes cannot exceed 2000 characters').optional().nullable()
+});
+
 router.put('/inquiries/:id', (req: Request, res: Response): void => {
   try {
     const inquiryId = Number(req.params.id);
-    const { status, responseNotes } = req.body;
+    if (!Number.isInteger(inquiryId) || inquiryId <= 0) {
+      res.status(400).json({ success: false, error: 'Invalid inquiry ID.' });
+      return;
+    }
 
-    if (!['new', 'in_progress', 'resolved'].includes(status)) {
-      res.status(400).json({ success: false, error: 'Invalid inquiry status.' });
+    const parseResult = updateInquirySchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({ success: false, error: parseResult.error.issues[0]?.message || 'Invalid inquiry update.' });
+      return;
+    }
+
+    const { status, responseNotes } = parseResult.data;
+
+    const existing = db.prepare('SELECT id FROM rental_inquiries WHERE id = ?').get(inquiryId);
+    if (!existing) {
+      res.status(404).json({ success: false, error: 'Inquiry not found.' });
       return;
     }
 
@@ -272,7 +289,7 @@ router.put('/inquiries/:id', (req: Request, res: Response): void => {
       action: 'INQUIRY_UPDATED',
       entityType: 'INQUIRY',
       entityId: inquiryId,
-      details: { newStatus: status, responseNotes: responseNotes || null },
+      details: { newStatus: status },
       ipAddress: req.ip
     });
 

@@ -27,10 +27,14 @@ router.get('/', (_req: Request, res: Response): void => {
 
 // POST /api/reviews - Customer Review Submission
 const reviewSchema = z.object({
-  vehicleId: z.number().int().positive().optional(),
-  bookingId: z.number().int().positive().optional(),
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().min(5, 'Review comment must be at least 5 characters')
+  vehicleId: z.number().int('Vehicle ID must be an integer').positive('Vehicle ID must be positive').optional(),
+  bookingId: z.number().int('Booking ID must be an integer').positive('Booking ID must be positive').optional(),
+  rating: z.number().int('Rating must be an integer between 1 and 5')
+    .min(1, 'Rating must be at least 1')
+    .max(5, 'Rating cannot exceed 5'),
+  comment: z.string().trim()
+    .min(5, 'Review comment must be at least 5 characters')
+    .max(1000, 'Review comment cannot exceed 1000 characters')
 });
 
 router.post('/', authenticate, (req: Request, res: Response): void => {
@@ -43,12 +47,32 @@ router.post('/', authenticate, (req: Request, res: Response): void => {
 
     const { vehicleId, bookingId, rating, comment } = parseResult.data;
 
+    if (vehicleId) {
+      const vehicle = db.prepare('SELECT id FROM vehicles WHERE id = ?').get(vehicleId);
+      if (!vehicle) {
+        res.status(400).json({ success: false, error: 'Referenced vehicle does not exist.' });
+        return;
+      }
+    }
+
+    if (bookingId) {
+      const booking = db.prepare('SELECT id, user_id FROM bookings WHERE id = ?').get(bookingId) as { id: number; user_id: number } | undefined;
+      if (!booking) {
+        res.status(400).json({ success: false, error: 'Referenced booking does not exist.' });
+        return;
+      }
+      if (booking.user_id !== req.user!.id && req.user!.role !== 'admin') {
+        res.status(403).json({ success: false, error: 'You can only review your own bookings.' });
+        return;
+      }
+    }
+
     const stmt = db.prepare(`
       INSERT INTO reviews (user_id, vehicle_id, booking_id, rating, comment, is_featured, is_approved)
       VALUES (?, ?, ?, ?, ?, 0, 1)
     `);
 
-    stmt.run(req.user!.id, vehicleId || null, bookingId || null, rating, comment.trim());
+    stmt.run(req.user!.id, vehicleId || null, bookingId || null, rating, comment);
 
     res.status(201).json({ success: true, message: 'Thank you! Your verified review has been published.' });
   } catch (error) {

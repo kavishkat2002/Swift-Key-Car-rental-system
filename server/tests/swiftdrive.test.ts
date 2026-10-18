@@ -479,6 +479,128 @@ describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () 
       expect(res.body.inquiryId).toBeDefined();
     });
 
+    it('should reject inquiry with empty or whitespace-only message', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'John Doe',
+          email: 'john@example.com',
+          phone: '+94 77 123 4567',
+          subject: 'Airport Pickup',
+          message: '          '
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Message must be at least 10 characters');
+    });
+
+    it('should reject inquiry with invalid email address', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'John Doe',
+          email: 'not-a-valid-email',
+          phone: '+94 77 123 4567',
+          subject: 'Airport Pickup',
+          message: 'Please pick me up at CMB terminal.'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Valid email address required');
+    });
+
+    it('should reject inquiry with invalid phone number format', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'John Doe',
+          email: 'john@example.com',
+          phone: 'not-a-phone-number',
+          subject: 'Airport Pickup',
+          message: 'Please pick me up at CMB terminal.'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Invalid phone number format');
+    });
+
+    it('should reject inquiry with overlong message (> 3000 chars)', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'John Doe',
+          email: 'john@example.com',
+          phone: '+94 77 123 4567',
+          subject: 'Airport Pickup',
+          message: 'A'.repeat(3001)
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('cannot exceed 3000 characters');
+    });
+
+    it('should accept inquiry with valid multilingual Unicode text (Sinhala & Tamil)', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'කවිෂ්ක තිලකරත්න',
+          email: 'kavishka.sinhala@example.lk',
+          phone: '+94 77 123 4567',
+          subject: 'වාහන කුලියට ගැනීම පිළිබඳ විමසීමක්',
+          message: 'කටුනායක ගුවන් තොටුපළට වාහනය ලබාගත හැකිද? ස්තූතියි.'
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.inquiryId).toBeDefined();
+
+      const saved = db.prepare('SELECT full_name, subject, message FROM rental_inquiries WHERE id = ?').get(res.body.inquiryId) as any;
+      expect(saved.full_name).toBe('කවිෂ්ක තිලකරත්න');
+      expect(saved.subject).toBe('වාහන කුලියට ගැනීම පිළිබඳ විමසීමක්');
+      expect(saved.message).toBe('කටුනායක ගුවන් තොටුපළට වාහනය ලබාගත හැකිද? ස්තූතියි.');
+    });
+
+    it('should safely store strings containing HTML-like input as plain text without execution', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'Security Tester <script>alert(1)</script>',
+          email: 'security.tester@example.com',
+          phone: '+94 77 000 1122',
+          subject: '<b>Rate Question</b>',
+          message: 'Does this rate include insurance? <img src=x onerror=alert("XSS")> Thank you.'
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+
+      const saved = db.prepare('SELECT full_name, subject, message FROM rental_inquiries WHERE id = ?').get(res.body.inquiryId) as any;
+      expect(saved.full_name).toBe('Security Tester <script>alert(1)</script>');
+      expect(saved.subject).toBe('<b>Rate Question</b>');
+      expect(saved.message).toContain('<img src=x onerror=alert("XSS")>');
+    });
+
+    it('should reject inquiry referencing a nonexistent vehicle ID', async () => {
+      const res = await request(app)
+        .post('/api/inquiries')
+        .send({
+          fullName: 'Test Inquirer',
+          email: 'inquirer@example.com',
+          phone: '+94 77 555 4433',
+          subject: 'Nonexistent Car',
+          message: 'Can I rent vehicle 999999 for my trip?',
+          vehicleId: 999999
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Referenced vehicle does not exist');
+    });
+
     it('should submit and retrieve customer review', async () => {
       const submitRes = await request(app)
         .post('/api/reviews')
@@ -494,6 +616,131 @@ describe('SwiftDrive Rentals Comprehensive Backend & Business Engine Tests', () 
       const listRes = await request(app).get('/api/reviews');
       expect(listRes.status).toBe(200);
       expect(listRes.body.reviews.some((r: any) => r.comment.includes('Fantastic experience'))).toBe(true);
+    });
+
+    it('should reject review with invalid ratings (below 1, above 5, or non-integer)', async () => {
+      const belowOne = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ vehicleId: 3, rating: 0, comment: 'Terrible rental experience.' });
+      expect(belowOne.status).toBe(400);
+      expect(belowOne.body.error).toContain('Rating must be at least 1');
+
+      const aboveFive = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ vehicleId: 3, rating: 6, comment: 'Above and beyond expectations.' });
+      expect(aboveFive.status).toBe(400);
+      expect(aboveFive.body.error).toContain('Rating cannot exceed 5');
+
+      const floatRating = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ vehicleId: 3, rating: 4.5, comment: 'Very good but not perfect.' });
+      expect(floatRating.status).toBe(400);
+      expect(floatRating.body.error).toContain('Rating must be an integer');
+    });
+
+    it('should reject review with empty, whitespace-only, or too-short comment', async () => {
+      const whitespace = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ vehicleId: 3, rating: 5, comment: '     ' });
+      expect(whitespace.status).toBe(400);
+      expect(whitespace.body.error).toContain('Review comment must be at least 5 characters');
+
+      const tooShort = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ vehicleId: 3, rating: 5, comment: 'Good' });
+      expect(tooShort.status).toBe(400);
+      expect(tooShort.body.error).toContain('Review comment must be at least 5 characters');
+    });
+
+    it('should reject review with overlong comment (> 1000 chars)', async () => {
+      const res = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({
+          vehicleId: 3,
+          rating: 5,
+          comment: 'W'.repeat(1001)
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('cannot exceed 1000 characters');
+    });
+
+    it('should accept review with legitimate multilingual text and HTML-like input safely', async () => {
+      const res = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({
+          vehicleId: 3,
+          rating: 5,
+          comment: 'ඉතා විශිෂ්ට සේවාවක්! කාර් එක ඉතා හොඳ තත්වයේ තිබුණා. <script>safe()</script>'
+        });
+
+      expect(res.status).toBe(201);
+
+      const listRes = await request(app).get('/api/reviews');
+      expect(listRes.status).toBe(200);
+      const found = listRes.body.reviews.find((r: any) => r.comment.includes('විශිෂ්ට සේවාවක්'));
+      expect(found).toBeDefined();
+      expect(found.comment).toContain('<script>safe()</script>');
+    });
+
+    it('should reject review referencing a nonexistent vehicle or booking ID', async () => {
+      const nonVehicle = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({
+          vehicleId: 999999,
+          rating: 4,
+          comment: 'Valid comment for nonexistent car'
+        });
+      expect(nonVehicle.status).toBe(400);
+      expect(nonVehicle.body.error).toContain('Referenced vehicle does not exist');
+
+      const nonBooking = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({
+          bookingId: 999999,
+          rating: 4,
+          comment: 'Valid comment for nonexistent booking'
+        });
+      expect(nonBooking.status).toBe(400);
+      expect(nonBooking.body.error).toContain('Referenced booking does not exist');
+    });
+
+    it('should allow staff to update inquiry and reject invalid status or nonexistent inquiry ID', async () => {
+      const notFound = await request(app)
+        .put('/api/staff/inquiries/999999')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({ status: 'resolved' });
+      expect(notFound.status).toBe(404);
+      expect(notFound.body.error).toContain('Inquiry not found');
+
+      const invalidStatus = await request(app)
+        .put('/api/staff/inquiries/1')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({ status: 'invalid_status_code' });
+      expect(invalidStatus.status).toBe(400);
+
+      const successUpdate = await request(app)
+        .put('/api/staff/inquiries/1')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({
+          status: 'resolved',
+          responseNotes: 'Called customer on WhatsApp and confirmed wedding booking details.'
+        });
+      expect(successUpdate.status).toBe(200);
+      expect(successUpdate.body.success).toBe(true);
+
+      const inquiry = db.prepare('SELECT status, response_notes FROM rental_inquiries WHERE id = 1').get() as any;
+      expect(inquiry.status).toBe('resolved');
+      expect(inquiry.response_notes).toContain('Called customer on WhatsApp');
     });
   });
 

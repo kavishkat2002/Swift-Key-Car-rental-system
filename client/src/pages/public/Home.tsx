@@ -88,14 +88,42 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
 
   const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const trimmedName = inquiryName.trim();
+    const trimmedEmail = inquiryEmail.trim();
+    const trimmedPhone = inquiryPhone.trim();
+    const trimmedSubject = inquirySubject.trim();
+    const trimmedMessage = inquiryMessage.trim();
+
+    if (trimmedName.length < 2) {
+      showError('Full name must be at least 2 characters.');
+      return;
+    }
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      showError('Please enter a valid email address.');
+      return;
+    }
+    if (trimmedPhone.length < 8) {
+      showError('Contact phone must be at least 8 characters.');
+      return;
+    }
+    if (trimmedSubject.length < 3) {
+      showError('Inquiry subject must be at least 3 characters.');
+      return;
+    }
+    if (trimmedMessage.length < 10) {
+      showError('Message must be at least 10 characters.');
+      return;
+    }
+
     try {
       setIsSubmittingInquiry(true);
       await api.inquiries.submit({
-        fullName: inquiryName,
-        email: inquiryEmail,
-        phone: inquiryPhone,
-        subject: inquirySubject,
-        message: inquiryMessage
+        fullName: trimmedName,
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        subject: trimmedSubject,
+        message: trimmedMessage
       });
       showSuccess('Your inquiry has been submitted! Our Negombo operations desk will reach out shortly.');
       setInquiryName('');
@@ -531,6 +559,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
                 <input
                   type="text"
                   required
+                  maxLength={100}
                   value={inquiryName}
                   onChange={(e) => setInquiryName(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
@@ -542,6 +571,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
                 <input
                   type="email"
                   required
+                  maxLength={255}
                   value={inquiryEmail}
                   onChange={(e) => setInquiryEmail(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
@@ -553,6 +583,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
                 <input
                   type="tel"
                   required
+                  maxLength={30}
                   value={inquiryPhone}
                   onChange={(e) => setInquiryPhone(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
@@ -566,6 +597,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onBookVehicle }) => {
               <textarea
                 rows={3}
                 required
+                maxLength={3000}
                 value={inquiryMessage}
                 onChange={(e) => setInquiryMessage(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md"
