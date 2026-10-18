@@ -25,7 +25,7 @@ const inquirySchema = z.object({
   vehicleId: z.number().int('Vehicle ID must be an integer').positive('Vehicle ID must be positive').optional()
 });
 
-// POST /api/inquiries - Submit Public Inquiry or Rental Question
+// POST /api/inquiries
 router.post('/', (req: Request, res: Response): void => {
   try {
     const parseResult = inquirySchema.safeParse(req.body);
@@ -60,7 +60,7 @@ router.post('/', (req: Request, res: Response): void => {
 
     const inquiryId = Number(result.lastInsertRowid);
 
-    // Audit log records structured operational metadata; sensitive message bodies are excluded
+    // Record audit event without logging full message body
     logAudit({
       userEmail: email.toLowerCase(),
       action: 'INQUIRY_SUBMITTED',

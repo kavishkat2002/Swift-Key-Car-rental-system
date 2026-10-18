@@ -15,7 +15,7 @@ const processPaymentSchema = z.object({
   testCardCvc: z.string().optional()
 });
 
-// POST /api/payments/process - Test Sandbox Payment Gateway
+// POST /api/payments/process
 router.post('/process', authenticate, (req: Request, res: Response): void => {
   try {
     const parseResult = processPaymentSchema.safeParse(req.body);
@@ -73,8 +73,7 @@ router.post('/process', authenticate, (req: Request, res: Response): void => {
       amountToCharge = booking.rental_cost_lkr;
     }
 
-    // Test Sandbox Card Simulation Logic:
-    // Any card ending with 0000 simulates payment failure / card decline (for testing and evaluation)
+    // Simulate decline if card ends with 0000
     const isSimulatedDecline = testCardNumber && testCardNumber.replace(/\s+/g, '').endsWith('0000');
 
     if (isSimulatedDecline) {
@@ -106,7 +105,7 @@ router.post('/process', authenticate, (req: Request, res: Response): void => {
       return;
     }
 
-    // Generate verified sandbox transaction reference
+    // Sandbox transaction reference
     const txnRef = `PAY-SANDBOX-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const executePaymentTx = db.transaction(() => {

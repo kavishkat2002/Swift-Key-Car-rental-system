@@ -11,7 +11,7 @@ const router = Router();
 router.use(authenticate);
 router.use(requireRole(['staff', 'admin']));
 
-// GET /api/staff/bookings - Comprehensive Reservation Management
+// GET /api/staff/bookings
 router.get('/bookings', (req: Request, res: Response): void => {
   try {
     const { status, search } = req.query;
@@ -66,7 +66,7 @@ router.get('/bookings', (req: Request, res: Response): void => {
   }
 });
 
-// PUT /api/staff/bookings/:id/status - Status Progression (Pickup / Return / Confirmation)
+// PUT /api/staff/bookings/:id/status
 const statusUpdateSchema = z.object({
   newStatus: z.enum(['confirmed', 'active', 'completed', 'cancelled']),
   notes: z.string().optional()
@@ -149,7 +149,7 @@ router.put('/bookings/:id/status', (req: Request, res: Response): void => {
   }
 });
 
-// POST /api/staff/inspections - Record Condition Report (Pickup / Return Inspection)
+// POST /api/staff/inspections
 const inspectionSchema = z.object({
   bookingId: z.number().int().positive(),
   vehicleId: z.number().int().positive(),
@@ -231,7 +231,7 @@ router.post('/inspections', (req: Request, res: Response): void => {
   }
 });
 
-// GET /api/staff/inquiries - Manage Customer Inquiries
+// GET /api/staff/inquiries
 router.get('/inquiries', (_req: Request, res: Response): void => {
   try {
     const inquiries = db.prepare(`
@@ -249,7 +249,7 @@ router.get('/inquiries', (_req: Request, res: Response): void => {
   }
 });
 
-// PUT /api/staff/inquiries/:id - Respond and update inquiry status
+// PUT /api/staff/inquiries/:id
 const updateInquirySchema = z.object({
   status: z.enum(['new', 'in_progress', 'resolved']),
   responseNotes: z.string().trim().max(2000, 'Response notes cannot exceed 2000 characters').optional().nullable()

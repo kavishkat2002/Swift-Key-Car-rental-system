@@ -1,8 +1,5 @@
-/**
- * SwiftDrive Rentals - Client-side Routing Engine
- * Provides URL synchronization, HTML5 history management, popstate listening,
- * and canonical route mappings compatible with React 19 without external dependencies.
- */
+// Client-side router for URL synchronization, browser navigation (popstate),
+// and page state mappings without extra dependencies.
 
 export interface RouteState {
   page: string;
@@ -10,9 +7,7 @@ export interface RouteState {
   path: string;
 }
 
-/**
- * Parses the current window pathname and search query string into a structured RouteState.
- */
+// Parse window.location into page and params
 export function parseLocation(pathname: string, search: string): RouteState {
   // Normalize pathname: remove trailing slash unless it's just "/"
   let cleanPath = pathname.trim();
@@ -111,9 +106,7 @@ export function parseLocation(pathname: string, search: string): RouteState {
   };
 }
 
-/**
- * Formats a canonical URL path from a page ID and optional parameters.
- */
+// Convert page identifier and parameters into clean URL path
 export function formatUrl(pageOrPath: string, params: Record<string, any> = {}): string {
   // If an absolute URL or path starting with '/' was passed directly, preserve it
   if (pageOrPath.startsWith('/')) {
@@ -182,9 +175,7 @@ export function formatUrl(pageOrPath: string, params: Record<string, any> = {}):
   }
 }
 
-/**
- * Builds a clean query string excluding internal routing keys and undefined values.
- */
+// Build query string, omitting internal routing keys
 function buildSafeQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {

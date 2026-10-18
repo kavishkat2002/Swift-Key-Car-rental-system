@@ -10,7 +10,7 @@ const router = Router();
 router.use(authenticate);
 router.use(requireRole(['admin']));
 
-// GET /api/admin/metrics - Real Database Aggregations
+// GET /api/admin/metrics
 router.get('/metrics', (_req: Request, res: Response): void => {
   try {
     // 1. Fleet metrics
@@ -87,7 +87,7 @@ router.get('/metrics', (_req: Request, res: Response): void => {
   }
 });
 
-// GET /api/admin/vehicles - All fleet including archived
+// GET /api/admin/vehicles
 router.get('/vehicles', (_req: Request, res: Response): void => {
   try {
     const vehicles = db.prepare('SELECT * FROM vehicles ORDER BY id ASC').all();
@@ -97,7 +97,7 @@ router.get('/vehicles', (_req: Request, res: Response): void => {
   }
 });
 
-// POST /api/admin/vehicles - Add new vehicle to fleet
+// POST /api/admin/vehicles
 const createVehicleSchema = z.object({
   make: z.string().min(2),
   model: z.string().min(2),
@@ -207,7 +207,7 @@ const updateVehicleSchema = z.object({
   main_image_url: z.string().url('Main image URL must be a valid URL').optional()
 });
 
-// PUT /api/admin/vehicles/:id - Edit vehicle specifications and tariffs (Supports Partial Updates)
+// PUT /api/admin/vehicles/:id
 router.put('/vehicles/:id', (req: Request, res: Response): void => {
   try {
     const vehicleId = Number(req.params.id);
@@ -240,7 +240,7 @@ router.put('/vehicles/:id', (req: Request, res: Response): void => {
       }
     }
 
-    // Build dynamic UPDATE query containing ONLY supplied fields to prevent undefined values or overwriting existing data
+    // Build dynamic UPDATE query for supplied fields
     const updates: string[] = [];
     const params: (string | number)[] = [];
 
@@ -338,7 +338,7 @@ router.put('/vehicles/:id', (req: Request, res: Response): void => {
   }
 });
 
-// DELETE /api/admin/vehicles/:id - Archive vehicle
+// DELETE /api/admin/vehicles/:id
 router.delete('/vehicles/:id', (req: Request, res: Response): void => {
   try {
     const vehicleId = Number(req.params.id);
@@ -359,7 +359,7 @@ router.delete('/vehicles/:id', (req: Request, res: Response): void => {
   }
 });
 
-// GET /api/admin/users - User and Staff Management
+// GET /api/admin/users
 router.get('/users', (_req: Request, res: Response): void => {
   try {
     const users = db.prepare(`
@@ -374,7 +374,7 @@ router.get('/users', (_req: Request, res: Response): void => {
   }
 });
 
-// PUT /api/admin/users/:id/role - Role Update (Cannot remove own admin privilege)
+// PUT /api/admin/users/:id/role
 router.put('/users/:id/role', (req: Request, res: Response): void => {
   try {
     const targetUserId = Number(req.params.id);
@@ -408,7 +408,7 @@ router.put('/users/:id/role', (req: Request, res: Response): void => {
   }
 });
 
-// GET /api/admin/audit-logs - Security and Audit Trail
+// GET /api/admin/audit-logs
 router.get('/audit-logs', (_req: Request, res: Response): void => {
   try {
     const logs = db.prepare('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100').all();
@@ -418,7 +418,7 @@ router.get('/audit-logs', (_req: Request, res: Response): void => {
   }
 });
 
-// GET /api/admin/payments - All financial transactions
+// GET /api/admin/payments
 router.get('/payments', (_req: Request, res: Response): void => {
   try {
     const payments = db.prepare(`

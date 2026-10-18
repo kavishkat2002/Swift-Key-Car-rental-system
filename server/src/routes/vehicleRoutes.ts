@@ -4,7 +4,7 @@ import { checkVehicleAvailability } from '../services/bookingService.js';
 
 const router = Router();
 
-// GET /api/vehicles - Filtered Catalogue & Availability Search
+// GET /api/vehicles
 router.get('/', (req: Request, res: Response): void => {
   try {
     const {

@@ -5,7 +5,7 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
-// GET /api/reviews - Approved and Featured Reviews
+// GET /api/reviews
 router.get('/', (_req: Request, res: Response): void => {
   try {
     const reviews = db.prepare(`
@@ -25,7 +25,7 @@ router.get('/', (_req: Request, res: Response): void => {
   }
 });
 
-// POST /api/reviews - Customer Review Submission
+// POST /api/reviews
 const reviewSchema = z.object({
   vehicleId: z.number().int('Vehicle ID must be an integer').positive('Vehicle ID must be positive').optional(),
   bookingId: z.number().int('Booking ID must be an integer').positive('Booking ID must be positive').optional(),

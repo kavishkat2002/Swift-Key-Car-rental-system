@@ -8,7 +8,7 @@ import { logAudit } from '../services/auditService.js';
 
 const router = Router();
 
-// POST /api/bookings/quote - Public/Authenticated Server-side Quote Generator
+// POST /api/bookings/quote
 const quoteSchema = z.object({
   vehicleId: z.number().int().positive(),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format must be YYYY-MM-DD'),
@@ -71,7 +71,7 @@ router.post('/quote', (req: Request, res: Response): void => {
   }
 });
 
-// POST /api/bookings - Create Booking (Protected, Transaction-safe)
+// POST /api/bookings
 const createBookingSchema = z.object({
   vehicleId: z.number().int().positive(),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pickup date must be YYYY-MM-DD'),
@@ -114,7 +114,7 @@ router.post('/', authenticate, (req: Request, res: Response): void => {
   }
 });
 
-// GET /api/bookings/my - Customer Dashboard Bookings (Customer Data Isolation)
+// GET /api/bookings/my
 router.get('/my', authenticate, (req: Request, res: Response): void => {
   try {
     const bookings = db.prepare(`
@@ -134,7 +134,7 @@ router.get('/my', authenticate, (req: Request, res: Response): void => {
   }
 });
 
-// GET /api/bookings/:id - Single Booking Details (Isolated for Customers)
+// GET /api/bookings/:id
 router.get('/:id', authenticate, (req: Request, res: Response): void => {
   try {
     const bookingId = Number(req.params.id);
@@ -186,7 +186,7 @@ router.get('/:id', authenticate, (req: Request, res: Response): void => {
   }
 });
 
-// POST /api/bookings/:id/cancel - Customer or Staff Cancellation
+// POST /api/bookings/:id/cancel
 router.post('/:id/cancel', authenticate, (req: Request, res: Response): void => {
   try {
     const bookingId = Number(req.params.id);

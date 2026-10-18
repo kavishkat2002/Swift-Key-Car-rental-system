@@ -20,12 +20,12 @@ const __dirname = path.dirname(__filename);
 export const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Trust reverse proxy (e.g. Render, Nginx, AWS ALB) if in production or configured
+// Trust proxy for rate limiting behind reverse proxies (Render, Nginx, etc.)
 if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === 'true') {
   app.set('trust proxy', 1);
 }
 
-// Security and middleware
+// Middleware
 app.use(cors({
   origin: true,
   credentials: true
@@ -58,7 +58,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/blog', blogRoutes);
 
-// In production, serve the built frontend assets from client/dist
+// Serve client build in production
 const clientDistPath = path.resolve(__dirname, '../../client/dist');
 app.use(express.static(clientDistPath));
 
@@ -68,7 +68,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     res.status(404).json({ success: false, error: `API route ${req.method} ${req.path} not found.` });
     return;
   }
-  // Otherwise serve client index.html for Single-Page Application routing on GET
+  // SPA fallback to index.html for GET requests
   if (req.method === 'GET') {
     res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
       if (err) {
@@ -80,7 +80,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// Global Error Handler
+// Error handler
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled Server Error:', err);
   const status = err.status || 500;
@@ -91,14 +91,11 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-// Start listener only when not in test mode
+// Listen if not running in test mode
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`=======================================================`);
-    console.log(`🚗 SwiftDrive Rentals Server running on port ${PORT}`);
-    console.log(`📍 Negombo, Sri Lanka Fleet & Reservation Engine Ready`);
-    console.log(`🔗 API Base: http://localhost:${PORT}/api`);
-    console.log(`=======================================================`);
+    console.log(`SwiftDrive Rentals server running on port ${PORT}`);
+    console.log(`API Base: http://localhost:${PORT}/api`);
   });
 }
 

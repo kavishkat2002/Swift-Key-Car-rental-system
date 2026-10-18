@@ -13,20 +13,19 @@ const dbPath = process.env.NODE_ENV === 'test'
 
 export const db = new Database(dbPath);
 
-// Enforce foreign key constraints and WAL mode for high performance & reliability
+// Enable foreign keys and WAL mode
 db.pragma('foreign_keys = ON');
 if (process.env.NODE_ENV !== 'test') {
   db.pragma('journal_mode = WAL');
 }
 
-// Function to initialize database schema
 export function initializeDatabase(): void {
   const schemaPath = path.resolve(__dirname, './schema.sql');
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
   db.exec(schemaSql);
 }
 
-// Run schema initialization immediately
+// Initial schema setup on load
 initializeDatabase();
 
 export default db;

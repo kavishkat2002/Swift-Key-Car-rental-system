@@ -29,7 +29,7 @@ const registerSchema = z.object({
   address: z.string().optional()
 });
 
-// POST /api/auth/register (Rate-limited, Strong Password Enforced)
+// POST /api/auth/register
 router.post('/register', registerRateLimiter, (req: Request, res: Response): void => {
   try {
     const parseResult = registerSchema.safeParse(req.body);
@@ -110,7 +110,7 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 });
 
-// POST /api/auth/login (Rate-limited against brute-force)
+// POST /api/auth/login
 router.post('/login', loginRateLimiter, (req: Request, res: Response): void => {
   try {
     const parseResult = loginSchema.safeParse(req.body);
@@ -252,7 +252,7 @@ router.post('/forgot-password', (req: Request, res: Response): void => {
   // Check if user exists
   const user = db.prepare('SELECT id, email FROM users WHERE LOWER(email) = LOWER(?)').get(email) as { id: number; email: string } | undefined;
   
-  // Safe response to prevent account enumeration
+  // Generic message to avoid email enumeration
   res.json({
     success: true,
     message: 'If an account exists with this email address, password reset instructions have been dispatched.'

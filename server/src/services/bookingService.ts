@@ -126,7 +126,7 @@ export function createBooking(input: CreateBookingInput): { booking: BookingReco
     throw new Error('Vehicle not found.');
   }
 
-  // Calculate pricing strictly on server
+  // Calculate pricing on server
   const quote = calculateRentalPrice(
     input.pickupDate,
     input.returnDate,
@@ -135,9 +135,9 @@ export function createBooking(input: CreateBookingInput): { booking: BookingReco
     vehicle.deposit_lkr
   );
 
-  // Execute database transaction to ensure atomicity and prevent race conditions
+  // Transaction to prevent race conditions
   const executeBookingTx = db.transaction(() => {
-    // 1. Re-validate availability inside the transaction lock
+    // Re-check availability inside transaction
     const availability = checkVehicleAvailability(input.vehicleId, input.pickupDate, input.returnDate);
     if (!availability.available) {
       throw new Error(availability.conflictReason || 'Vehicle is not available for the selected dates.');
