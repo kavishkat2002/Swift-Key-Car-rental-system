@@ -192,14 +192,34 @@ router.get('/me', authenticate, (req: Request, res: Response): void => {
     const userRecord = db.prepare(`
       SELECT id, email, full_name, phone, role, driving_license_number, address, created_at
       FROM users WHERE id = ?
-    `).get(req.user!.id);
+    `).get(req.user!.id) as {
+      id: number;
+      email: string;
+      full_name: string;
+      phone: string;
+      role: 'customer' | 'staff' | 'admin';
+      driving_license_number: string | null;
+      address: string | null;
+      created_at: string;
+    } | undefined;
 
     if (!userRecord) {
       res.status(404).json({ success: false, error: 'User profile not found.' });
       return;
     }
 
-    res.json({ success: true, user: userRecord });
+    const user = {
+      id: userRecord.id,
+      email: userRecord.email,
+      fullName: userRecord.full_name,
+      role: userRecord.role,
+      phone: userRecord.phone,
+      drivingLicenseNumber: userRecord.driving_license_number,
+      address: userRecord.address,
+      createdAt: userRecord.created_at
+    };
+
+    res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to retrieve profile.' });
   }
@@ -231,11 +251,36 @@ router.put('/profile', authenticate, (req: Request, res: Response): void => {
     });
 
     const updated = db.prepare(`
-      SELECT id, email, full_name, phone, role, driving_license_number, address
+      SELECT id, email, full_name, phone, role, driving_license_number, address, created_at
       FROM users WHERE id = ?
-    `).get(req.user!.id);
+    `).get(req.user!.id) as {
+      id: number;
+      email: string;
+      full_name: string;
+      phone: string;
+      role: 'customer' | 'staff' | 'admin';
+      driving_license_number: string | null;
+      address: string | null;
+      created_at: string;
+    } | undefined;
 
-    res.json({ success: true, message: 'Profile updated successfully.', user: updated });
+    if (!updated) {
+      res.status(404).json({ success: false, error: 'User profile not found.' });
+      return;
+    }
+
+    const user = {
+      id: updated.id,
+      email: updated.email,
+      fullName: updated.full_name,
+      role: updated.role,
+      phone: updated.phone,
+      drivingLicenseNumber: updated.driving_license_number,
+      address: updated.address,
+      createdAt: updated.created_at
+    };
+
+    res.json({ success: true, message: 'Profile updated successfully.', user });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to update profile.' });
   }

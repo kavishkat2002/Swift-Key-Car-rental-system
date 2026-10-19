@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                 <div className="flex items-center gap-2 pl-1">
                   <div className="text-right">
                     <span className="block text-xs font-semibold text-[#102A43] leading-tight">
-                      {user.fullName.split(' ')[0]}
+                      {((user.fullName || (user as any).full_name || user.email || 'User')).split(' ')[0]}
                     </span>
                     <span className="block text-[10px] uppercase font-bold tracking-wider text-[#526477]">
                       {user.role}
@@ -218,7 +218,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
               <>
                 <div className="px-3 py-1 flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-bold text-[#102A43]">{user.fullName}</div>
+                    <div className="text-sm font-bold text-[#102A43]">
+                      {user.fullName || (user as any).full_name || user.email || 'User'}
+                    </div>
                     <div className="text-xs text-slate-500 uppercase">{user.role} • {user.email}</div>
                   </div>
                   <button

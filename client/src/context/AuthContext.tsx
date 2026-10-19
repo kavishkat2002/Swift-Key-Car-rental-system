@@ -17,6 +17,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function normalizeUser(raw: any): User {
+  if (!raw) return raw;
+  return {
+    id: raw.id,
+    email: raw.email || '',
+    fullName: raw.fullName || raw.full_name || raw.email || 'User',
+    role: raw.role || 'customer',
+    phone: raw.phone || '',
+    drivingLicenseNumber: raw.drivingLicenseNumber ?? raw.driving_license_number ?? null,
+    address: raw.address ?? null,
+    createdAt: raw.createdAt || raw.created_at
+  };
+}
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('swiftdrive_token'));
@@ -33,7 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const response = await api.auth.getMe();
         if (response.success && response.user) {
-          setUser(response.user);
+          setUser(normalizeUser(response.user));
         } else {
           logout();
         }
@@ -52,8 +66,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (response.success) {
       localStorage.setItem('swiftdrive_token', response.token);
       setToken(response.token);
-      setUser(response.user);
-      return response.user;
+      const normalized = normalizeUser(response.user);
+      setUser(normalized);
+      return normalized;
     }
     throw new Error('Authentication failed');
   };
@@ -70,8 +85,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (response.success) {
       localStorage.setItem('swiftdrive_token', response.token);
       setToken(response.token);
-      setUser(response.user);
-      return response.user;
+      const normalized = normalizeUser(response.user);
+      setUser(normalized);
+      return normalized;
     }
     throw new Error('Registration failed');
   };
@@ -83,7 +99,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
+    setUser(normalizeUser(updatedUser));
   };
 
   const isCustomer = user?.role === 'customer';
