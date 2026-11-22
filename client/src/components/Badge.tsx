@@ -10,7 +10,9 @@ export const Badge: React.FC<BadgeProps> = ({ status, size = 'sm' }) => {
 
   let styles = 'bg-slate-100 text-slate-700 border-slate-200';
 
-  if (norm === 'available' || norm === 'completed' || norm === 'paid' || norm === 'successful') {
+  if (norm === 'available') {
+    styles = 'bg-transparent text-slate-600 border-slate-300';
+  } else if (norm === 'completed' || norm === 'paid' || norm === 'successful') {
     styles = 'bg-emerald-50 text-emerald-800 border-emerald-200';
   } else if (norm === 'confirmed' || norm === 'active' || norm === 'full') {
     styles = 'bg-teal-50 text-teal-800 border-teal-200';
