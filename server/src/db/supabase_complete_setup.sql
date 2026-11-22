@@ -2,10 +2,7 @@
 -- SwiftDrive Rentals — Complete Turnkey Supabase Database Setup
 -- Project URL: https://ufogqgdrzmoptvfuidxh.supabase.co
 -- Negombo, Sri Lanka Fleet & Reservation Engine
--- =====================================================================
--- Run this entire file in Supabase SQL Editor:
--- https://supabase.com/dashboard/project/ufogqgdrzmoptvfuidxh/sql
--- =====================================================================
+
 
 -- 1. CLEANUP EXISTING TABLES (IF RE-INITIALIZING)
 DROP TABLE IF EXISTS audit_logs CASCADE;
