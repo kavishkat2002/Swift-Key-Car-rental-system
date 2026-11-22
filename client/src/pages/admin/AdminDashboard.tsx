@@ -196,14 +196,9 @@ export const AdminDashboard: React.FC = () => {
       {/* Page Header */}
       <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#102A43] tracking-tight">
-              Fleet & Business Administration
-            </h1>
-            <span className="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded border border-teal-200 uppercase">
-              Admin Verified
-            </span>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#102A43] tracking-tight">
+            Fleet & Business Administration
+          </h1>
           <p className="text-xs sm:text-sm text-[#526477] mt-1">
             Grounded in actual database records • Negombo Hub Fleet Analytics
           </p>
