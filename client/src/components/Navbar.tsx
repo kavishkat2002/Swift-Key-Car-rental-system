@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Car, Menu, X, User as UserIcon, LogOut, ShieldCheck, ClipboardList, Calendar } from 'lucide-react';
+import { Car, Menu, X, User as UserIcon, LogOut, ClipboardList, Calendar } from 'lucide-react';
 import { formatUrl } from '../utils/router';
 
 interface NavbarProps {
@@ -118,13 +118,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                       e.preventDefault();
                       handleNav('admin-dashboard');
                     }}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       currentPage === 'admin-dashboard'
-                        ? 'bg-[#0F766E] text-white'
-                        : 'text-[#0F766E] hover:bg-teal-50 border border-teal-200'
+                        ? 'bg-[#102A43] text-white'
+                        : 'text-[#102A43] hover:bg-slate-100'
                     }`}
                   >
-                    <ShieldCheck className="w-4 h-4" />
                     <span>Admin Fleet</span>
                   </a>
                 )}
